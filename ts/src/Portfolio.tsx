@@ -120,18 +120,24 @@ export default function Portfolio() {
 
   return (
     <Box flexDirection="column" padding={1}>
-      {/* Top row: header left, robot right */}
+      {/* Top row: header left, robot + speech right */}
       <Box justifyContent="space-between">
         <Box flexDirection="column">
           <Header />
         </Box>
-        <Box flexDirection="column" alignItems="flex-end">
-          {frame.map((line, i) => (
-            <Text key={`r-${i}`} color="#333">{line}</Text>
-          ))}
+        <Box>
+          {/* Speech bubble to the left of robot */}
           {lastBotMsg && (
-            <Text color="#555" wrap="wrap">{lastBotMsg.text}</Text>
+            <Box flexDirection="column" justifyContent="center" marginRight={1} width={32}>
+              <Text color="#444" wrap="wrap">{lastBotMsg.text}</Text>
+            </Box>
           )}
+          {/* Robot */}
+          <Box flexDirection="column">
+            {frame.map((line, i) => (
+              <Text key={`r-${i}`} color="#333">{line}</Text>
+            ))}
+          </Box>
         </Box>
       </Box>
 
