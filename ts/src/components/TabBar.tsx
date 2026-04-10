@@ -1,5 +1,4 @@
-// Tab bar navigation component
-// Pattern from: terminal-ui-showcase/src/demos/tab-panels.tsx
+// Minimal tab bar -- muted text, subtle active indicator
 
 import React from 'react';
 import { Box, Text } from 'ink';
@@ -21,18 +20,14 @@ export default function TabBar({ tabs, activeIdx }: TabBarProps) {
     <Box>
       {tabs.map((tab, i) => {
         const isActive = i === activeIdx;
-        const underChar = isActive ? '━' : '─';
-        const underWidth = tab.label.length + tab.icon.length + 5;
-
         return (
           <Box key={tab.key} flexDirection="column">
             <Box paddingX={1} gap={1}>
-              <Text color={isActive ? tab.color : '#30363d'}>{tab.icon}</Text>
-              <Text color="gray" dimColor>{tab.key}</Text>
-              <Text color={isActive ? tab.color : '#8b949e'} bold={isActive}>{tab.label}</Text>
+              <Text color="#444">{tab.key}</Text>
+              <Text color={isActive ? '#bbb' : '#555'}>{tab.label}</Text>
             </Box>
-            <Text color={isActive ? tab.color : '#21262d'}>
-              {underChar.repeat(underWidth)}
+            <Text color={isActive ? '#666' : '#222'}>
+              {(isActive ? '━' : '─').repeat(tab.label.length + 4)}
             </Text>
           </Box>
         );

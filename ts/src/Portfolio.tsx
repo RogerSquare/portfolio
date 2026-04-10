@@ -46,7 +46,7 @@ export default function Portfolio() {
     <Box flexDirection="column" padding={1}>
       <Header />
       <TabBar tabs={TAB_DEFS} activeIdx={activeTab} />
-      <Box flexDirection="column" borderStyle="round" borderColor={TAB_DEFS[activeTab].color} paddingX={2} paddingY={1} minHeight={12}>
+      <Box flexDirection="column" borderStyle="round" borderColor="#222" paddingX={2} paddingY={1} minHeight={12}>
         <ActiveContent />
       </Box>
       <Box marginTop={1}>
