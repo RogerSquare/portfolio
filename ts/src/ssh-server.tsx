@@ -8,6 +8,10 @@ process.env.TERM = 'xterm-256color';
 
 import React from 'react';
 import { render } from 'ink';
+import chalk from 'chalk';
+// Force chalk to use truecolor (level 3) regardless of stream detection
+chalk.level = 3;
+
 import ssh2 from 'ssh2';
 const { Server } = ssh2;
 import { readFileSync, existsSync, writeFileSync, unlinkSync } from 'fs';
