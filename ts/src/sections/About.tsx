@@ -6,10 +6,10 @@ import { Box, Text } from 'ink';
 import { about } from '../data.js';
 
 const STATS = [
-  { value: '8+', label: 'Years in IT', color: '#fdb32a' },
-  { value: '6+', label: 'Projects', color: '#58a6ff' },
-  { value: '5+', label: 'Languages', color: '#3fb950' },
-  { value: '3', label: 'Platforms', color: '#bc8cff' },
+  { value: '8+', label: 'Years in IT', color: '#fdb32a', icon: '◷' },
+  { value: '6+', label: 'Projects', color: '#58a6ff', icon: '▣' },
+  { value: '5+', label: 'Languages', color: '#3fb950', icon: '◇' },
+  { value: '3', label: 'Platforms', color: '#bc8cff', icon: '◉' },
 ];
 
 export default function AboutSection() {
@@ -55,11 +55,14 @@ export default function AboutSection() {
       </Box>
 
       {/* Stat cards */}
-      <Box marginTop={1} gap={2}>
+      <Box marginTop={1} gap={1}>
         {STATS.map(stat => (
-          <Box key={stat.label} flexDirection="column" alignItems="center" borderStyle="round" borderColor="#30363d" paddingX={2} paddingY={0}>
-            <Text color={stat.color} bold>{stat.value}</Text>
-            <Text color="gray" dimColor>{stat.label}</Text>
+          <Box key={stat.label} flexDirection="column" alignItems="center" borderStyle="round" borderColor="#30363d" paddingX={3} paddingY={1} minWidth={14}>
+            <Box gap={1}>
+              <Text color={stat.color}>{stat.icon}</Text>
+              <Text color={stat.color} bold>{stat.value}</Text>
+            </Box>
+            <Text color="#c9d1d9">{stat.label}</Text>
           </Box>
         ))}
       </Box>

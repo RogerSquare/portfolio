@@ -6,7 +6,11 @@ import { Box, Text } from 'ink';
 import { contact } from '../data.js';
 
 const GRADIENT_STOPS = ['#da7756', '#e8945a', '#fdb32a', '#e8945a', '#da7756'];
-const SHIMMER_COLORS = ['#2a2a3a', '#3a3a4a', '#4a4a5a', '#58a6ff', '#4a4a5a', '#3a3a4a'];
+// Soft blue-gray wave -- stays readable, no harsh jumps
+const SHIMMER_COLORS = [
+  '#6e7681', '#7c8490', '#8b929e', '#99a1ad', '#8b929e', '#7c8490',
+  '#6e7681', '#616a76', '#566070', '#4d5566', '#566070', '#616a76',
+];
 
 function gradientColor(stops: string[], t: number): string {
   if (stops.length === 1) return stops[0];
@@ -31,7 +35,7 @@ export default function Header() {
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => setOffset(prev => prev + 1), 80);
+    const timer = setInterval(() => setOffset(prev => prev + 1), 180);
     return () => clearInterval(timer);
   }, []);
 
