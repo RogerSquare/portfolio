@@ -87,15 +87,16 @@ function layout(title: string, nav: string, content: string): string {
       font-size: 12px; color: var(--text-muted); opacity: 0.5;
     }
     .terminal-hint code { color: var(--text-strong); opacity: 0.8; }
-    header { padding: 80px 0 0; position: relative; }
-    nav { position: absolute; top: 32px; right: 0; display: flex; gap: 20px; }
+    header { padding: 0; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; padding: 32px 0; }
+    nav { display: flex; gap: 20px; }
     nav a { font-size: 14px; color: var(--text); opacity: 0.5; border-bottom: none; transition: opacity 0.2s; }
     nav a:hover { opacity: 1; border-bottom: none; }
     nav a.active { opacity: 0.9; }
-    .logo { margin-bottom: 16px; }
-    .logo a { border-bottom: none; display: inline-block; opacity: 0.4; transition: opacity 0.3s; }
+    .logo a { border-bottom: none; display: flex; opacity: 0.4; transition: opacity 0.3s; }
     .logo a:hover { opacity: 0.9; border-bottom: none; }
-    .logo svg { width: 40px; height: 40px; }
+    .logo svg { width: 36px; height: 36px; }
+    .header-info { padding-top: 24px; }
     .name { font-size: 1.8rem; font-weight: 700; color: var(--text-deep); letter-spacing: -0.02em; }
     .name a { border-bottom: none; color: var(--text-deep); }
     .name a:hover { border-bottom: none; opacity: 0.8; }
@@ -172,8 +173,8 @@ function layout(title: string, nav: string, content: string): string {
     .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 6px; }
     @media (max-width: 640px) {
       main { padding: 0 20px; }
-      header { padding-top: 60px; }
-      nav { position: static; margin-bottom: 32px; }
+      .header-top { padding: 20px 0; }
+      nav { gap: 14px; }
       .name { font-size: 1.5rem; }
     }
   </style>
@@ -183,13 +184,17 @@ function layout(title: string, nav: string, content: string): string {
   <div class="terminal-hint si si1">try it in your terminal &mdash; <code>ssh r-that.com</code></div>
   <main>
     <header class="si si2">
+      <div class="header-top">
       <div class="logo"><a href="/" aria-label="Home">
         <svg viewBox="0 0 757.89 790.52" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><g><path d="M405.11,350.18c7.29,1.46,13.5,3.38,17.53,9.98,9.63,15.81-2.22,29.34-11.56,41.5-66.03,85.97-136.94,163.1-186.52,261.48-12.34,24.48-24.37,51.92-28.45,79.04,2.28,2.45,33.75-18.15,37.72-20.77,110.66-73.06,223.76-169.69,322.29-258.71,11.34-10.25,26.29-27.89,38.05-35.95,17.17-11.77,35.92,5.29,25.79,22.79-4.07,7.03-24.6,23.74-31.84,30.16-66.8,59.34-138.67,117.65-208.54,173.46-51.67,41.27-106.86,86.21-162.95,121.05-15.5,9.62-37.07,23.24-55.21,12.17-25.43-15.51-5.1-67.5,3.51-88.87,28.04-69.59,77.65-140.6,121.79-201.21,23.72-32.57,51.87-63.98,74.79-96.21.64-.9,3.37-4.15,2.59-4.9-38.61,11.34-74.64,29.73-111.93,44.56-14.04,14.67-26.33,31.23-38.46,47.54-7.13,9.58-25.8,40.56-34.29,44.71-13.32,6.52-28.75-1.7-26.25-17.26,1.29-8.03,20.36-32.79,26.12-40.87,10.05-14.13,21.06-27.72,31.23-41.77,27.94-38.58,55.9-77.16,83.59-115.9-43.17,17.07-86.09,37.28-126.67,59.82-33.8,18.77-65.84,39.45-97.64,61.36-11.51,7.93-33.81,27.28-45,32-18.69,7.89-33.64-12.67-18.71-27.71s51.08-36.76,70.71-49.29c82.04-52.42,169.7-94.04,259.63-131.12,13.15-19.23,25.65-44.14,40.27-61.98,7.13-8.71,17.23-14.37,27.75-6.92,14.95,10.58,1.71,25.12-5.33,35.34-.52.75-2.08,1.64-.51,2.49,21.54-10.78,44.2-19.03,66.18-28.82,43.79-19.5,85.91-40.17,131.07-56.93,22.39-8.31,50.24-19.5,74.49-15.99,14.37,2.08,19.02,13.56,15.26,26.74-7.18,25.2-71.93,69.77-94.98,85.02-59.09,39.09-123.28,70.19-183.22,107.78-.62.39-2.81,1.53-2.3,2.19ZM637.11,164.2c-1.97-.27-3.71.39-5.55.94-15.99,4.88-37.21,15.07-53.13,21.87-73.89,31.55-146.04,67.14-219.65,99.35-4.26,3.36-7.2,8.24-10.48,12.52-21.85,28.44-41.93,58.42-63.18,87.31l49.3-28.19c73.04-48.05,150.61-88.95,224.61-135.39,27.37-17.17,55.54-35.15,78.08-58.41Z"/><path d="M713.11,69.18c11.91-3.29,31.5-9.65,41.4,1.11s-5.35,19.73-14.62,23.19c-7.87,2.94-44.66,13.32-51.17,12.66-10.62-1.08-15.43-11.76-12.67-21.49,3.14-11.04,15.71-28.44,20.91-40.09,1.49-3.34,5.14-11.55,5.08-14.8-.13-7-14.37-7.59-13.81.74,18.79,18.45-10.54,36.55-21.69,14.76-6.7-13.09-4.4-32.18,9.03-40.08,12.01-7.07,35.81-7.62,46.06,2.99,17.11,17.72.22,43.62-8.53,61.02Z"/></g></svg>
       </a></div>
       <nav>${nav}</nav>
+      </div>
+      <div class="header-info">
       <div class="name"><a href="/">${contact.name}</a></div>
       <div class="title">${contact.title}</div>
       <div class="location">${contact.location}</div>
+      </div>
     </header>
     ${content}
   </main>
