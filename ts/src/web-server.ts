@@ -6,6 +6,9 @@ import { contact, about, skills, projects, experience } from './data.js';
 
 const app = express();
 const PORT = parseInt(process.env.WEB_PORT || '3000', 10);
+const ADMIN_PASS = process.env.ADMIN_PASS || 'changeme';
+
+app.use(express.urlencoded({ extended: true }));
 
 // Shared layout wrapper
 function layout(title: string, nav: string, content: string): string {
@@ -275,7 +278,7 @@ app.get('/experience', (_req, res) => {
 });
 
 // ---- BLOG ----
-import { readdirSync, readFileSync, existsSync, mkdirSync } from 'fs';
+import { readdirSync, readFileSync, existsSync, mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import matter from 'gray-matter';
@@ -361,6 +364,190 @@ app.get('/blog/:slug', (req, res) => {
     </section>`;
 
   res.send(layout(`${post.title} - ${contact.name}`, navLinks('blog'), content));
+});
+
+// ---- ADMIN ----
+function adminLayout(title: string, body: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --bg: #050505; --surface: #0e0e0e; --border: rgba(136,136,136,0.15); --text: #bbb; --text-strong: #ddd; --text-muted: #666; --accent: #fdb32a; --mono: 'DM Mono','Fira Code',monospace; --font: 'Inter',sans-serif; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; }
+    .admin { max-width: 740px; margin: 0 auto; padding: 32px 24px; }
+    h1 { font-size: 1.3rem; color: var(--text-strong); margin-bottom: 24px; font-weight: 600; }
+    h2 { font-size: 1rem; color: var(--text-strong); margin-bottom: 16px; font-weight: 600; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { opacity: 0.8; }
+    .btn { padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text); transition: all 0.15s; font-family: var(--font); }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary { background: var(--accent); color: #050505; border-color: var(--accent); }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-danger { color: #f85149; }
+    .btn-danger:hover { border-color: #f85149; background: rgba(248,81,73,0.1); }
+    .post-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .post-row:last-child { border-bottom: none; }
+    .post-info { flex: 1; }
+    .post-info .title { color: var(--text-strong); font-weight: 500; }
+    .post-info .meta { font-size: 0.8rem; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; }
+    .actions { display: flex; gap: 8px; }
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; margin-top: 16px; }
+    input[type=text], input[type=password] { width: 100%; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--font); outline: none; }
+    input:focus { border-color: var(--accent); }
+    textarea { width: 100%; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--mono); line-height: 1.6; outline: none; resize: vertical; }
+    textarea:focus { border-color: var(--accent); }
+    .form-actions { margin-top: 20px; display: flex; gap: 10px; }
+    .flash { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; }
+    .flash-ok { background: rgba(63,185,80,0.1); color: #3fb950; border: 1px solid rgba(63,185,80,0.2); }
+    .flash-err { background: rgba(248,81,73,0.1); color: #f85149; border: 1px solid rgba(248,81,73,0.2); }
+    .login-box { max-width: 320px; margin: 120px auto; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  </style>
+</head>
+<body><div class="admin">${body}</div></body></html>`;
+}
+
+// Simple session via cookie
+const ADMIN_COOKIE = 'portfolio_admin';
+function isAuthed(req: express.Request): boolean {
+  const cookie = req.headers.cookie || '';
+  return cookie.includes(`${ADMIN_COOKIE}=1`);
+}
+
+function requireAdmin(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (!isAuthed(req)) { res.redirect('/admin/login'); return; }
+  next();
+}
+
+app.get('/admin/login', (req, res) => {
+  const err = req.query.err ? '<div class="flash flash-err">Invalid password</div>' : '';
+  res.send(adminLayout('Admin Login', `
+    <div class="login-box">
+      <h1>admin</h1>
+      ${err}
+      <form method="POST" action="/admin/login">
+        <label>password</label>
+        <input type="password" name="password" autofocus>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">login</button></div>
+      </form>
+    </div>
+  `));
+});
+
+app.post('/admin/login', (req, res) => {
+  if (req.body.password === ADMIN_PASS) {
+    res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=1; Path=/admin; HttpOnly; SameSite=Strict; Max-Age=86400`);
+    res.redirect('/admin');
+  } else {
+    res.redirect('/admin/login?err=1');
+  }
+});
+
+app.get('/admin/logout', (_req, res) => {
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; Path=/admin; HttpOnly; Max-Age=0`);
+  res.redirect('/admin/login');
+});
+
+app.get('/admin', requireAdmin, (_req, res) => {
+  const posts = loadPosts();
+  const msg = '';
+  res.send(adminLayout('Blog Admin', `
+    <div class="top-bar">
+      <h1>blog posts</h1>
+      <div class="actions">
+        <a href="/admin/new" class="btn btn-primary">new post</a>
+        <a href="/admin/logout" class="btn">logout</a>
+      </div>
+    </div>
+    ${posts.length === 0 ? '<p style="color:var(--text-muted)">no posts yet</p>' : posts.map(p => `
+      <div class="post-row">
+        <div class="post-info">
+          <div class="title">${p.title}</div>
+          <div class="meta">${p.date} &mdash; ${p.slug}.md</div>
+        </div>
+        <div class="actions">
+          <a href="/blog/${p.slug}" class="btn" target="_blank">view</a>
+          <a href="/admin/edit/${p.slug}" class="btn">edit</a>
+          <form method="POST" action="/admin/delete/${p.slug}" style="display:inline" onsubmit="return confirm('Delete this post?')">
+            <button type="submit" class="btn btn-danger">delete</button>
+          </form>
+        </div>
+      </div>
+    `).join('')}
+  `));
+});
+
+function postForm(action: string, post: { slug: string; title: string; date: string; tags: string; description: string; content: string }, isNew: boolean): string {
+  return `
+    <a href="/admin" style="font-size:0.85rem;opacity:0.5">&larr; back</a>
+    <h1 style="margin-top:12px">${isNew ? 'new post' : 'edit post'}</h1>
+    <form method="POST" action="${action}">
+      <label>title</label>
+      <input type="text" name="title" value="${post.title.replace(/"/g, '&quot;')}" required>
+      <label>slug (filename without .md)</label>
+      <input type="text" name="slug" value="${post.slug}" ${isNew ? '' : 'readonly style="opacity:0.5"'} required>
+      <label>date (YYYY-MM-DD)</label>
+      <input type="text" name="date" value="${post.date}" required>
+      <label>tags (comma separated)</label>
+      <input type="text" name="tags" value="${post.tags}">
+      <label>description</label>
+      <input type="text" name="description" value="${post.description.replace(/"/g, '&quot;')}">
+      <label>content (markdown)</label>
+      <textarea name="content" rows="24">${post.content}</textarea>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">${isNew ? 'publish' : 'save'}</button>
+        <a href="/admin" class="btn">cancel</a>
+      </div>
+    </form>
+  `;
+}
+
+app.get('/admin/new', requireAdmin, (_req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+  res.send(adminLayout('New Post', postForm('/admin/new', {
+    slug: `${today}-`, title: '', date: today, tags: '', description: '', content: ''
+  }, true)));
+});
+
+app.post('/admin/new', requireAdmin, (req, res) => {
+  const { slug, title, date, tags, description, content } = req.body;
+  const safeSlug = slug.replace(/[^a-z0-9-]/g, '');
+  const frontmatter = `---\ntitle: ${title}\ndate: ${date}\ntags: [${(tags || '').split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: ${description}\n---\n\n`;
+  writeFileSync(join(POSTS_DIR, `${safeSlug}.md`), frontmatter + content, 'utf8');
+  res.redirect('/admin');
+});
+
+app.get('/admin/edit/:slug', requireAdmin, (req, res) => {
+  const posts = loadPosts();
+  const post = posts.find(p => p.slug === req.params.slug);
+  if (!post) { res.redirect('/admin'); return; }
+  res.send(adminLayout('Edit Post', postForm(`/admin/edit/${post.slug}`, {
+    slug: post.slug,
+    title: post.title,
+    date: post.date,
+    tags: post.tags.join(', '),
+    description: post.description,
+    content: post.content,
+  }, false)));
+});
+
+app.post('/admin/edit/:slug', requireAdmin, (req, res) => {
+  const { title, date, tags, description, content } = req.body;
+  const slug = req.params.slug;
+  const frontmatter = `---\ntitle: ${title}\ndate: ${date}\ntags: [${(tags || '').split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: ${description}\n---\n\n`;
+  writeFileSync(join(POSTS_DIR, `${slug}.md`), frontmatter + content, 'utf8');
+  res.redirect('/admin');
+});
+
+app.post('/admin/delete/:slug', requireAdmin, (req, res) => {
+  const filePath = join(POSTS_DIR, `${req.params.slug}.md`);
+  if (existsSync(filePath)) unlinkSync(filePath);
+  res.redirect('/admin');
 });
 
 app.listen(PORT, '0.0.0.0', () => {
