@@ -1,0 +1,106 @@
+{
+  "Contact": {
+    "Name": "Roger Ochoa",
+    "Title": "Software Engineer",
+    "Email": "rog@r-that.com",
+    "Phone": "",
+    "LinkedIn": "",
+    "GitHub": "github.com/RogerSquare",
+    "Website": "r-that.com",
+    "Location": "Houston, TX"
+  },
+  "About": "Transitioning from a robust background in Systems Engineering and Infrastructure to dedicated Software Development. I leverage my deep IT experience to build efficient, automated, and scalable software solutions. Passionate about coding, I specialize in creating tools that optimize workflows, utilizing platforms like PowerApps, Go, and scripting languages to solve complex business problems.",
+  "Skills": [
+    {
+      "Name": "Development & Scripting",
+      "Level": 5,
+      "Skills": ["Go", "PowerApps", "AutoIT", "Shell/PowerShell Scripting", "Software Architecture"]
+    },
+    {
+      "Name": "Infrastructure & Automation",
+      "Level": 5,
+      "Skills": ["VDI", "HPDM", "SCCM", "VSOM", "Automation Workflows", "System Design"]
+    },
+    {
+      "Name": "Core Competencies",
+      "Level": 5,
+      "Skills": ["Professional & Efficient", "Consistent", "Empathetic", "Team Player", "Fast Learner", "Self-Motivated"]
+    }
+  ],
+  "Projects": [
+    {
+      "Name": "Terminal Portfolio Showcase",
+      "Description": "A beautiful, interactive terminal-based portfolio built using the Model-View-Update (MVU) pattern to showcase software development and engineering skills natively in the command line.",
+      "Technologies": ["Go", "Bubble Tea", "Lip Gloss"],
+      "Link": "github.com/RogerSquare/portfolio",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "Flash Alert Tool",
+      "Description": "Researched and developed a PowerApps solution for the Gulf Coast Division, providing an intuitive, fast application to send scheduled and unscheduled downtime alerts, allowing engineering teams to focus on critical issues.",
+      "Technologies": ["PowerApps", "UI/UX Design", "Database Integration"],
+      "Link": "",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "PAR Tracking Application",
+      "Description": "Architected and created a PAR tracking application for the West Houston team to provide precise tracking of stock levels and generate streamlined presentations for executive CFO approvals.",
+      "Technologies": ["PowerApps", "Data Analytics"],
+      "Link": "",
+      "LiveDemo": ""
+    }
+  ],
+  "Experience": [
+    {
+      "Company": "Enterprise Infrastructure & VDI",
+      "Role": "Systems Engineer",
+      "Period": "2024 - Present",
+      "Description": [
+        "Architect and manage comprehensive VDI infrastructure and thin client environments.",
+        "Utilize HPDM to streamline the administration and deployment of thin clients.",
+        "Develop automation scripts and workflow tools to reduce manual infrastructure tasks.",
+        "Bridge the gap between hardware infrastructure and software solutions to improve end-user experience."
+      ]
+    },
+    {
+      "Company": "Supply Chain/West Houston",
+      "Role": "Senior Technical Analyst",
+      "Period": "2020 - 2024",
+      "Description": [
+        "Created PAR applications to assist WHMC team with inventory management.",
+        "Researched and developed PowerApp to create email flash tool for IT leadership/Division Shared Services.",
+        "Supported and maintained User-Shares, Printer, Rightfax and S2 Security Servers.",
+        "Worked with SA team members to provide easy install/deployment solutions for Supply Chain users."
+      ]
+    },
+    {
+      "Company": "Central Zone",
+      "Role": "Technical Analyst I/II",
+      "Period": "May 2018 - Jan 2019",
+      "Description": [
+        "Supported executive and administrative personnel with accuracy and efficiency.",
+        "Served as project lead and primary contact by coordinating with vendors.",
+        "Participated in SA lead projects to learn and understand role."
+      ]
+    },
+    {
+      "Company": "Gulf Coast Division",
+      "Role": "Service Desk Analyst",
+      "Period": "March 2016 - May 2018",
+      "Description": [
+        "Maintained and created documentation for team members.",
+        "Exceeded metrics used by Service Desk leadership such as First Call Resolve, Time Availability."
+      ]
+    }
+  ],
+  "Education": [
+    {
+      "Company": "Self-Directed Learning",
+      "Role": "Continuous Learner / Self-Taught Engineer",
+      "Period": "Always Learning",
+      "Description": [
+        "Actively upskilling through official documentation, building open-source projects, and hands-on architecture design."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+# SSH host keys — NEVER commit
+.ssh/
+
+# Compiled binaries
+portfolio
+portfolio.exe
+portfolio.exe~
+
+# Resume/personal documents
+files/
+
+# Windows service installer (contains hardcoded paths)
+install-service.bat
+add-firewall-rule.bat
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,35 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    - name: Build
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+      run: |
+        output_name=portfolio-${{ matrix.goos }}-${{ matrix.goarch }}
+        if [ "${{ matrix.goos }}" = "windows" ]; then
+          output_name+='.exe'
+        fi
+        go build -o $output_name .
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: portfolio-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: portfolio-*
