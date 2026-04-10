@@ -14,12 +14,15 @@
   "license": "MIT",
   "dependencies": {
     "express": "^5.2.1",
+    "gray-matter": "^4.0.3",
     "ink": "^7.0.0",
+    "marked": "^18.0.0",
     "react": "^19.2.5",
     "ssh2": "^1.17.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/marked": "^5.0.2",
     "@types/react": "^19.2.14",
     "@types/ssh2": "^1.15.5",
     "tsx": "^4.21.0",
