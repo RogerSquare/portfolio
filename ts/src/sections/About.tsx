@@ -6,7 +6,7 @@ import { Box, Text } from 'ink';
 import { about } from '../data.js';
 
 const STATS = [
-  { value: '8+', label: 'Years in IT', color: '#fdb32a', icon: '◷' },
+  { value: '10', label: 'Years in IT', color: '#fdb32a', icon: '◷' },
   { value: '6+', label: 'Projects', color: '#58a6ff', icon: '▣' },
   { value: '5+', label: 'Languages', color: '#3fb950', icon: '◇' },
   { value: '3', label: 'Platforms', color: '#bc8cff', icon: '◉' },
@@ -50,7 +50,6 @@ export default function AboutSection() {
         <Text color="#c9d1d9" wrap="wrap">
           {revealed}
           {!done && <Text color="#da7756">{cursorVisible ? '█' : ' '}</Text>}
-          {done && <Text color="#3fb950"> ✓</Text>}
         </Text>
       </Box>
 
