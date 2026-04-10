@@ -5,10 +5,10 @@ import React from 'react';
 import { render } from 'ink';
 import ssh2 from 'ssh2';
 const { Server } = ssh2;
-import { readFileSync, existsSync, writeFileSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { generateKeyPairSync } from 'crypto';
+import { execSync } from 'child_process';
 import { Duplex } from 'stream';
 import Portfolio from './Portfolio.js';
 
@@ -19,26 +19,22 @@ const MAX_CONNECTIONS = 20;
 
 let activeConnections = 0;
 
-// Generate or load host key
+// Generate or load host key using ssh-keygen for OpenSSH format
 function getHostKey(): string {
   if (existsSync(HOST_KEY_PATH)) {
     return readFileSync(HOST_KEY_PATH, 'utf8');
   }
 
   console.log('Generating new SSH host key...');
-  const { privateKey } = generateKeyPairSync('ed25519', {
-    publicKeyEncoding: { type: 'spki', format: 'pem' },
-    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-  });
-
-  writeFileSync(HOST_KEY_PATH, privateKey, { mode: 0o600 });
+  execSync(`ssh-keygen -t ed25519 -f "${HOST_KEY_PATH}" -N "" -q`);
+  try { unlinkSync(`${HOST_KEY_PATH}.pub`); } catch {}
   console.log(`Host key saved to ${HOST_KEY_PATH}`);
-  return privateKey;
+  return readFileSync(HOST_KEY_PATH, 'utf8');
 }
 
 const hostKey = getHostKey();
 
-const server = new Server({ hostKeys: [hostKey] }, (client: Connection) => {
+const server = new Server({ hostKeys: [hostKey] }, (client: any) => {
   const clientIp = (client as any)._sock?.remoteAddress || 'unknown';
   activeConnections++;
   console.log(`[${new Date().toISOString()}] Client connected: ${clientIp} (${activeConnections}/${MAX_CONNECTIONS})`);
@@ -50,20 +46,20 @@ const server = new Server({ hostKeys: [hostKey] }, (client: Connection) => {
     return;
   }
 
-  client.on('authentication', (ctx) => {
+  client.on('authentication', (ctx: any) => {
     // Accept all authentication -- this is a public portfolio
     ctx.accept();
   });
 
   client.on('ready', () => {
-    client.on('session', (accept: () => Session) => {
+    client.on('session', (accept: () => any) => {
       const session = accept();
 
-      session.on('pty', (accept, _reject, info) => {
+      session.on('pty', (accept: any, _reject: any, info: any) => {
         accept?.();
       });
 
-      session.on('shell', (accept) => {
+      session.on('shell', (accept: any) => {
         const channel = accept();
 
         // Create a Duplex stream wrapper that Ink can use
@@ -144,7 +140,7 @@ const server = new Server({ hostKeys: [hostKey] }, (client: Connection) => {
     console.log(`[${new Date().toISOString()}] Client disconnected: ${clientIp} (${activeConnections}/${MAX_CONNECTIONS})`);
   });
 
-  client.on('error', (err) => {
+  client.on('error', (err: any) => {
     if (err.message !== 'read ECONNRESET') {
       console.error(`[${new Date().toISOString()}] Client error ${clientIp}:`, err.message);
     }
