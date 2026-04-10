@@ -92,13 +92,10 @@ function layout(title: string, nav: string, content: string): string {
     nav a { font-size: 14px; color: var(--text); opacity: 0.5; border-bottom: none; transition: opacity 0.2s; }
     nav a:hover { opacity: 1; border-bottom: none; }
     nav a.active { opacity: 0.9; }
-    .logo { position: absolute; top: 32px; left: 0; }
-    .logo a { border-bottom: none; display: block; opacity: 0.4; transition: opacity 0.3s; }
+    .logo { margin-bottom: 16px; }
+    .logo a { border-bottom: none; display: inline-block; opacity: 0.4; transition: opacity 0.3s; }
     .logo a:hover { opacity: 0.9; border-bottom: none; }
     .logo svg { width: 40px; height: 40px; }
-    @media (min-width: 1100px) {
-      .logo { position: fixed; top: 24px; left: 24px; }
-    }
     .name { font-size: 1.8rem; font-weight: 700; color: var(--text-deep); letter-spacing: -0.02em; }
     .name a { border-bottom: none; color: var(--text-deep); }
     .name a:hover { border-bottom: none; opacity: 0.8; }
