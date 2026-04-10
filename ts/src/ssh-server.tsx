@@ -65,12 +65,22 @@ const server = new Server({ hostKeys: [hostKey] }, (client: any) => {
       session.on('shell', (accept: any) => {
         const channel = accept();
 
+        // Set TERM so Ink knows colors are supported
+        process.env.TERM = 'xterm-256color';
+        process.env.COLORTERM = 'truecolor';
+        process.env.FORCE_COLOR = '3';
+
+        // Enter alternate screen buffer and hide cursor
+        channel.write('\x1b[?1049h\x1b[H\x1b[2J\x1b[?25l');
+
         // Create writable stream that pipes to the SSH channel
 
         const stdout = new PassThrough() as any;
         stdout.columns = ptyInfo.cols;
         stdout.rows = ptyInfo.rows;
         stdout.isTTY = true;
+        stdout.hasColors = () => true;
+        stdout.getColorDepth = () => 24;
         stdout.cursorTo = (x: number, y?: number) => {
           if (y !== undefined) stdout.write(`\x1b[${y + 1};${x + 1}H`);
           else stdout.write(`\x1b[${x + 1}G`);
@@ -135,8 +145,11 @@ const server = new Server({ hostKeys: [hostKey] }, (client: any) => {
           });
 
           inkInstance.waitUntilExit().then(() => {
+            // Restore alternate screen, show cursor
+            if (channel.writable) channel.write('\x1b[?25h\x1b[?1049l');
             channel.end();
           }).catch(() => {
+            if (channel.writable) channel.write('\x1b[?25h\x1b[?1049l');
             channel.end();
           });
         } catch (err) {
