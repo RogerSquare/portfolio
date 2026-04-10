@@ -42,14 +42,11 @@ function layout(title: string, nav: string, content: string): string {
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
     }
-    body::before {
-      content: '';
+    #circuit-bg {
       position: fixed;
       inset: 0;
-      background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 24px 24px;
-      pointer-events: none;
       z-index: 0;
+      pointer-events: none;
     }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #111; }
@@ -161,6 +158,7 @@ function layout(title: string, nav: string, content: string): string {
   </style>
 </head>
 <body>
+  <canvas id="circuit-bg"></canvas>
   <div class="terminal-hint si si1">try it in your terminal &mdash; <code>ssh r-that.com</code></div>
   <main>
     <header class="si si2">
@@ -176,6 +174,177 @@ function layout(title: string, nav: string, content: string): string {
   <script>
     const btn = document.querySelector('.to-top');
     window.addEventListener('scroll', () => { btn.style.opacity = window.scrollY > 300 ? '0.5' : '0'; });
+
+    // Circuit Flow background animation
+    (function() {
+      const canvas = document.getElementById('circuit-bg');
+      const ctx = canvas.getContext('2d');
+      let W, H, nodes, edges, particles;
+      const SPACING = 60;
+      const NODE_OPACITY = 0.04;
+      const EDGE_OPACITY = 0.025;
+      const PARTICLE_COLOR = 'rgba(253, 179, 42, ';
+      const MAX_PARTICLES = 8;
+      const isMobile = window.innerWidth < 640;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        buildGrid();
+      }
+
+      function buildGrid() {
+        nodes = [];
+        edges = [];
+        const cols = Math.ceil(W / SPACING) + 1;
+        const rows = Math.ceil(H / SPACING) + 1;
+        const grid = [];
+
+        for (let r = 0; r < rows; r++) {
+          grid[r] = [];
+          for (let c = 0; c < cols; c++) {
+            // Offset some nodes slightly for organic feel
+            const jx = (Math.random() - 0.5) * 8;
+            const jy = (Math.random() - 0.5) * 8;
+            const node = {
+              x: c * SPACING + jx,
+              y: r * SPACING + jy,
+              pulse: Math.random() * Math.PI * 2,
+              speed: 0.005 + Math.random() * 0.01,
+              active: Math.random() > 0.3, // 70% of nodes exist
+            };
+            grid[r][c] = node;
+            if (node.active) nodes.push(node);
+          }
+        }
+
+        // Create edges between adjacent active nodes
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (!grid[r][c].active) continue;
+            // Right neighbor
+            if (c + 1 < cols && grid[r][c + 1].active && Math.random() > 0.3) {
+              edges.push([grid[r][c], grid[r][c + 1]]);
+            }
+            // Down neighbor
+            if (r + 1 < rows && grid[r + 1][c].active && Math.random() > 0.3) {
+              edges.push([grid[r][c], grid[r + 1][c]]);
+            }
+          }
+        }
+
+        // Initialize particles
+        particles = [];
+      }
+
+      function spawnParticle() {
+        if (particles.length >= (isMobile ? 3 : MAX_PARTICLES) || edges.length === 0) return;
+        const edge = edges[Math.floor(Math.random() * edges.length)];
+        particles.push({
+          from: edge[0],
+          to: edge[1],
+          progress: 0,
+          speed: 0.008 + Math.random() * 0.012,
+          trail: [],
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw edges
+        ctx.strokeStyle = 'rgba(255, 255, 255, ' + EDGE_OPACITY + ')';
+        ctx.lineWidth = 0.5;
+        for (const [a, b] of edges) {
+          ctx.beginPath();
+          // Draw L-shaped circuit paths instead of straight lines
+          if (Math.abs(a.x - b.x) > Math.abs(a.y - b.y)) {
+            const midX = (a.x + b.x) / 2;
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(midX, a.y);
+            ctx.lineTo(midX, b.y);
+            ctx.lineTo(b.x, b.y);
+          } else {
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+          }
+          ctx.stroke();
+        }
+
+        // Draw nodes with pulse
+        for (const node of nodes) {
+          node.pulse += node.speed;
+          const opacity = NODE_OPACITY + Math.sin(node.pulse) * 0.015;
+          ctx.fillStyle = 'rgba(255, 255, 255, ' + Math.max(0.01, opacity) + ')';
+          ctx.fillRect(node.x - 1, node.y - 1, 2, 2);
+        }
+
+        // Update and draw particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.progress += p.speed;
+
+          if (p.progress >= 1) {
+            particles.splice(i, 1);
+            continue;
+          }
+
+          // Calculate position along the path
+          const { from, to } = p;
+          let px, py;
+          if (Math.abs(from.x - to.x) > Math.abs(from.y - to.y)) {
+            const midX = (from.x + to.x) / 2;
+            if (p.progress < 0.33) {
+              const t = p.progress / 0.33;
+              px = from.x + (midX - from.x) * t;
+              py = from.y;
+            } else if (p.progress < 0.66) {
+              const t = (p.progress - 0.33) / 0.33;
+              px = midX;
+              py = from.y + (to.y - from.y) * t;
+            } else {
+              const t = (p.progress - 0.66) / 0.34;
+              px = midX + (to.x - midX) * t;
+              py = to.y;
+            }
+          } else {
+            px = from.x + (to.x - from.x) * p.progress;
+            py = from.y + (to.y - from.y) * p.progress;
+          }
+
+          // Store trail positions
+          p.trail.push({ x: px, y: py });
+          if (p.trail.length > 8) p.trail.shift();
+
+          // Draw trail
+          for (let t = 0; t < p.trail.length; t++) {
+            const alpha = (t / p.trail.length) * 0.15;
+            const size = 1 + (t / p.trail.length);
+            ctx.fillStyle = PARTICLE_COLOR + alpha + ')';
+            ctx.fillRect(p.trail[t].x - size/2, p.trail[t].y - size/2, size, size);
+          }
+
+          // Draw particle head with glow
+          ctx.fillStyle = PARTICLE_COLOR + '0.25)';
+          ctx.fillRect(px - 1.5, py - 1.5, 3, 3);
+
+          // Subtle glow
+          ctx.fillStyle = PARTICLE_COLOR + '0.06)';
+          ctx.fillRect(px - 4, py - 4, 8, 8);
+        }
+
+        // Spawn new particles periodically
+        if (Math.random() < 0.02) spawnParticle();
+
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      // Spawn a few initial particles
+      for (let i = 0; i < 3; i++) spawnParticle();
+      draw();
+    })();
   </script>
 </body>
 </html>`;
