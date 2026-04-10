@@ -192,21 +192,21 @@ function layout(title: string, nav: string, content: string): string {
     const btn = document.querySelector('.to-top');
     window.addEventListener('scroll', () => { btn.style.opacity = window.scrollY > 300 ? '0.5' : '0'; });
 
-    // Generative branching background
+    // PCB trace generative background
     (function() {
       const canvas = document.getElementById('bg-canvas');
       const ctx = canvas.getContext('2d');
-      const { random, cos, sin, PI } = Math;
-      const r90 = PI / 2;
-      const r180 = PI;
-      const r15 = PI / 12;
-      const color = '#88888820';
-      const len = 6;
+      const { random, floor, PI } = Math;
+      const traceColor = '#88888818';
+      const padColor = '#88888812';
+      const viaColor = '#88888825';
       const MIN_BRANCH = 30;
       const FPS = 40;
       const interval = 1000 / FPS;
+      // PCB traces only move in 0, 45, 90, 135, 180, 225, 270, 315 degrees
+      const ANGLES = [0, PI/4, PI/2, 3*PI/4, PI, 5*PI/4, 3*PI/2, 7*PI/4];
 
-      let W, H, steps, prevSteps, stopped, rafId, lastTime;
+      let W, H, steps, prevSteps, rafId, lastTime;
 
       function initCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -219,38 +219,85 @@ function layout(title: string, nav: string, content: string): string {
         ctx.scale(dpr, dpr);
       }
 
-      function step(x, y, rad, counter) {
-        const length = random() * len;
+      function nearestAngle(rad) {
+        // Snap to nearest 45-degree increment
+        var best = 0, bestDiff = 99;
+        for (var i = 0; i < ANGLES.length; i++) {
+          var diff = Math.abs(rad - ANGLES[i]);
+          if (diff > PI) diff = 2 * PI - diff;
+          if (diff < bestDiff) { bestDiff = diff; best = ANGLES[i]; }
+        }
+        return best;
+      }
+
+      function pickTurn(rad) {
+        // PCB traces: go straight (60%), 45-degree turn (30%), or 90-degree turn (10%)
+        var r = random();
+        if (r < 0.6) return rad;
+        if (r < 0.9) return nearestAngle(rad + (random() < 0.5 ? PI/4 : -PI/4));
+        return nearestAngle(rad + (random() < 0.5 ? PI/2 : -PI/2));
+      }
+
+      function trace(x, y, rad, counter) {
+        // Trace segment length: 8-20px (longer than organic branches)
+        var len = 8 + random() * 12;
         counter.v++;
 
-        const nx = x + cos(rad) * length;
-        const ny = y + sin(rad) * length;
+        var nx = x + Math.cos(rad) * len;
+        var ny = y + Math.sin(rad) * len;
 
+        // Draw the trace
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(nx, ny);
         ctx.stroke();
 
+        // Out of bounds check
         if (nx < -100 || nx > W + 100 || ny < -100 || ny > H + 100) return;
 
-        const rate = counter.v <= MIN_BRANCH ? 0.8 : 0.5;
-        const rad1 = rad + random() * r15;
-        const rad2 = rad - random() * r15;
+        // Draw a via (small circle) at branch points
+        if (counter.v > 1 && random() < 0.12) {
+          ctx.beginPath();
+          ctx.arc(nx, ny, 2.5, 0, 2 * PI);
+          ctx.strokeStyle = viaColor;
+          ctx.stroke();
+          ctx.strokeStyle = traceColor;
+        }
 
-        if (random() < rate) steps.push(function() { step(nx, ny, rad1, counter); });
-        if (random() < rate) steps.push(function() { step(nx, ny, rad2, counter); });
+        // Draw a pad (filled circle) occasionally
+        if (random() < 0.04) {
+          ctx.fillStyle = padColor;
+          ctx.beginPath();
+          ctx.arc(nx, ny, 3.5, 0, 2 * PI);
+          ctx.fill();
+        }
+
+        var rate = counter.v <= MIN_BRANCH ? 0.8 : 0.45;
+
+        // Main trace continues with a turn
+        var newRad = pickTurn(rad);
+        if (random() < rate) {
+          steps.push(function() { trace(nx, ny, newRad, counter); });
+        }
+
+        // Branch: T-junction (perpendicular split) with lower probability
+        if (random() < (counter.v <= MIN_BRANCH ? 0.15 : 0.06)) {
+          var branchRad = nearestAngle(rad + (random() < 0.5 ? PI/2 : -PI/2));
+          steps.push(function() { trace(nx, ny, branchRad, {v: counter.v}); });
+        }
       }
 
       function frame() {
-        const now = performance.now();
+        var now = performance.now();
         if (now - lastTime < interval) { rafId = requestAnimationFrame(frame); return; }
         lastTime = now;
 
         prevSteps = steps;
         steps = [];
 
-        if (!prevSteps.length) { stopped = true; return; }
+        if (!prevSteps.length) return;
 
+        // Stagger: 50% of steps deferred to next frame for organic timing
         prevSteps.forEach(function(fn) {
           if (random() < 0.5) steps.push(fn);
           else fn();
@@ -264,20 +311,25 @@ function layout(title: string, nav: string, content: string): string {
         initCanvas();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.lineWidth = 1;
-        ctx.strokeStyle = color;
-        stopped = false;
+        ctx.strokeStyle = traceColor;
+        ctx.lineCap = 'square';
         prevSteps = [];
         lastTime = performance.now();
 
         var mid = function() { return random() * 0.6 + 0.2; };
+        var r90 = PI / 2;
+
+        // Start traces from all four edges
         steps = [
-          function() { step(mid() * W, -5, r90, {v:0}); },
-          function() { step(mid() * W, H + 5, -r90, {v:0}); },
-          function() { step(-5, mid() * H, 0, {v:0}); },
-          function() { step(W + 5, mid() * H, r180, {v:0}); },
+          function() { trace(mid() * W, -5, r90, {v:0}); },
+          function() { trace(mid() * W, -5, r90, {v:0}); },
+          function() { trace(mid() * W, H + 5, -r90, {v:0}); },
+          function() { trace(mid() * W, H + 5, -r90, {v:0}); },
+          function() { trace(-5, mid() * H, 0, {v:0}); },
+          function() { trace(W + 5, mid() * H, PI, {v:0}); },
         ];
 
-        if (W < 500) steps = steps.slice(0, 2);
+        if (W < 500) steps = steps.slice(0, 3);
 
         rafId = requestAnimationFrame(frame);
       }
