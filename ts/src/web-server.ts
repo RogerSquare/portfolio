@@ -46,11 +46,17 @@ function layout(title: string, nav: string, content: string): string {
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
     }
-    #circuit-bg {
+    .bg-canvas-wrap {
       position: fixed;
-      inset: 0;
-      z-index: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -1;
       pointer-events: none;
+      mask-image: radial-gradient(circle, transparent 20%, black 80%);
+      -webkit-mask-image: radial-gradient(circle, transparent 20%, black 80%);
+    }
+    .bg-canvas-wrap canvas {
+      width: 100%;
+      height: 100%;
     }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #111; }
@@ -169,7 +175,7 @@ function layout(title: string, nav: string, content: string): string {
   </style>
 </head>
 <body>
-  <canvas id="circuit-bg"></canvas>
+  <div class="bg-canvas-wrap"><canvas id="bg-canvas"></canvas></div>
   <div class="terminal-hint si si1">try it in your terminal &mdash; <code>ssh r-that.com</code></div>
   <main>
     <header class="si si2">
@@ -186,135 +192,98 @@ function layout(title: string, nav: string, content: string): string {
     const btn = document.querySelector('.to-top');
     window.addEventListener('scroll', () => { btn.style.opacity = window.scrollY > 300 ? '0.5' : '0'; });
 
-    // Generative Branching Tree - circuit-meets-organic
+    // Generative branching background
     (function() {
-      const canvas = document.getElementById('circuit-bg');
+      const canvas = document.getElementById('bg-canvas');
       const ctx = canvas.getContext('2d');
-      let W, H;
-      const isMobile = window.innerWidth < 640;
-      const INIT_ITERS = isMobile ? 4 : 6;
-      const MAX_LEN = 8;
-      const BRANCH_PROB = 0.5;
-      const SNAP_PROB = 0.6; // probability of snapping to 90-degree angles
-      const PI2 = Math.PI * 2;
-      const R15 = Math.PI / 12;
-      let steps = [];
-      let prevSteps = [];
-      let iterations = 0;
-      let frameId;
+      const { random, cos, sin, PI } = Math;
+      const r90 = PI / 2;
+      const r180 = PI;
+      const r15 = PI / 12;
+      const color = '#88888820';
+      const len = 6;
+      const MIN_BRANCH = 30;
+      const FPS = 40;
+      const interval = 1000 / FPS;
 
-      function resize() {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-        generate();
+      let W, H, steps, prevSteps, stopped, rafId, lastTime;
+
+      function initCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        ctx.scale(dpr, dpr);
       }
 
-      function snapAngle(rad) {
-        // Snap to nearest 90 degrees with some probability
-        if (Math.random() < SNAP_PROB) {
-          const snapped = Math.round(rad / (Math.PI / 2)) * (Math.PI / 2);
-          return snapped + (Math.random() - 0.5) * 0.15; // slight wobble
-        }
-        return rad;
-      }
+      function step(x, y, rad, counter) {
+        const length = random() * len;
+        counter.v++;
 
-      function branch(x, y, rad) {
-        const len = Math.random() * MAX_LEN;
-        const nx = x + Math.cos(rad) * len;
-        const ny = y + Math.sin(rad) * len;
+        const nx = x + cos(rad) * length;
+        const ny = y + sin(rad) * length;
 
-        // Boundary check with padding
-        if (nx < -50 || nx > W + 50 || ny < -50 || ny > H + 50) return;
-
-        // Draw the line segment
         ctx.beginPath();
         ctx.moveTo(x, y);
-
-        // Circuit style: sometimes draw L-shaped segments
-        if (Math.random() < 0.3 && len > 4) {
-          const mid = len * 0.5;
-          const mx = x + Math.cos(rad) * mid;
-          const perpRad = rad + Math.PI / 2;
-          const offset = (Math.random() - 0.5) * 4;
-          const my = y + Math.sin(rad) * mid + Math.sin(perpRad) * offset;
-          ctx.lineTo(mx, my);
-          ctx.lineTo(nx, ny);
-        } else {
-          ctx.lineTo(nx, ny);
-        }
+        ctx.lineTo(nx, ny);
         ctx.stroke();
 
-        // Occasionally draw a small node dot at junctions
-        if (Math.random() < 0.15) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-          ctx.fillRect(nx - 1, ny - 1, 2, 2);
-        }
+        if (nx < -100 || nx > W + 100 || ny < -100 || ny > H + 100) return;
 
-        // Spawn children
-        const rad1 = snapAngle(rad + Math.random() * R15);
-        const rad2 = snapAngle(rad - Math.random() * R15);
+        const rate = counter.v <= MIN_BRANCH ? 0.8 : 0.5;
+        const rad1 = rad + random() * r15;
+        const rad2 = rad - random() * r15;
 
-        if (iterations < INIT_ITERS || Math.random() < BRANCH_PROB) {
-          steps.push(() => branch(nx, ny, rad1));
-        }
-        if (iterations < INIT_ITERS || Math.random() < BRANCH_PROB) {
-          steps.push(() => branch(nx, ny, rad2));
-        }
+        if (random() < rate) steps.push(function() { step(nx, ny, rad1, counter); });
+        if (random() < rate) steps.push(function() { step(nx, ny, rad2, counter); });
       }
 
       function frame() {
-        iterations++;
+        const now = performance.now();
+        if (now - lastTime < interval) { rafId = requestAnimationFrame(frame); return; }
+        lastTime = now;
+
         prevSteps = steps;
         steps = [];
-        if (prevSteps.length === 0) {
-          cancelAnimationFrame(frameId);
-          return;
-        }
-        // Cap branches per frame to stay performant
-        const batch = prevSteps.slice(0, isMobile ? 30 : 80);
-        batch.forEach(fn => fn());
-        frameId = requestAnimationFrame(frame);
-      }
 
-      function generate() {
-        ctx.clearRect(0, 0, W, H);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-        ctx.lineWidth = 0.8;
-        steps = [];
-        prevSteps = [];
-        iterations = 0;
+        if (!prevSteps.length) { stopped = true; return; }
 
-        // Multiple start points from edges and center
-        const starts = [
-          { x: 0, y: H * 0.3, rad: 0 },
-          { x: W, y: H * 0.6, rad: Math.PI },
-          { x: W * 0.4, y: 0, rad: Math.PI / 2 },
-          { x: W * 0.7, y: H, rad: -Math.PI / 2 },
-        ];
-
-        if (!isMobile) {
-          starts.push({ x: W * 0.5, y: H * 0.5, rad: Math.random() * PI2 });
-          starts.push({ x: W * 0.5, y: H * 0.5, rad: Math.random() * PI2 });
-        }
-
-        starts.forEach(s => {
-          steps.push(() => branch(s.x, s.y, s.rad));
-          steps.push(() => branch(s.x, s.y, s.rad + Math.PI));
+        prevSteps.forEach(function(fn) {
+          if (random() < 0.5) steps.push(fn);
+          else fn();
         });
 
-        frameId = requestAnimationFrame(frame);
+        rafId = requestAnimationFrame(frame);
       }
 
-      // Click to regenerate
-      canvas.style.cursor = 'pointer';
-      canvas.addEventListener('click', generate);
-      window.addEventListener('resize', () => {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-        generate();
-      });
+      function start() {
+        if (rafId) cancelAnimationFrame(rafId);
+        initCanvas();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = color;
+        stopped = false;
+        prevSteps = [];
+        lastTime = performance.now();
 
-      resize();
+        var mid = function() { return random() * 0.6 + 0.2; };
+        steps = [
+          function() { step(mid() * W, -5, r90, {v:0}); },
+          function() { step(mid() * W, H + 5, -r90, {v:0}); },
+          function() { step(-5, mid() * H, 0, {v:0}); },
+          function() { step(W + 5, mid() * H, r180, {v:0}); },
+        ];
+
+        if (W < 500) steps = steps.slice(0, 2);
+
+        rafId = requestAnimationFrame(frame);
+      }
+
+      window.addEventListener('resize', start);
+      start();
     })();
   </script>
 </body>
