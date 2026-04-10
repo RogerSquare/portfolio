@@ -11,11 +11,11 @@ export const about =
   'Transitioning from a robust background in Systems Engineering and Infrastructure to dedicated Software Development. I leverage my deep IT experience to build efficient, automated, and scalable software solutions. Passionate about coding, I specialize in creating tools that optimize workflows, utilizing platforms like Go, React, TypeScript, and Python to solve complex problems.';
 
 export const skills = [
-  { name: 'Languages', level: 5, items: ['Go', 'Swift', 'TypeScript', 'JavaScript', 'Python', 'PowerShell'] },
-  { name: 'Frontend', level: 4, items: ['React', 'SwiftUI', 'Vite', 'Tailwind CSS', 'Ink'] },
-  { name: 'Backend & Data', level: 5, items: ['Node.js', 'Express', 'SQLite', 'REST APIs', 'JWT Auth'] },
-  { name: 'Infrastructure', level: 5, items: ['Docker', 'VDI', 'SCCM', 'HPDM', 'Git', 'CI/CD'] },
-  { name: 'AI / ML', level: 3, items: ['CLIP', 'BLIP', 'ONNX Runtime', 'Auto-Tagging'] },
+  { name: 'Languages', icon: '◇', color: '#58a6ff', items: ['Go', 'Swift', 'TypeScript', 'JavaScript', 'Python', 'PowerShell'] },
+  { name: 'Frontend', icon: '◆', color: '#3fb950', items: ['React', 'SwiftUI', 'Vite', 'Tailwind CSS', 'Ink'] },
+  { name: 'Backend & Data', icon: '▣', color: '#da7756', items: ['Node.js', 'Express', 'SQLite', 'REST APIs', 'JWT Auth'] },
+  { name: 'Infrastructure', icon: '◉', color: '#d29922', items: ['Docker', 'VDI', 'SCCM', 'HPDM', 'Git', 'CI/CD'] },
+  { name: 'AI / ML', icon: '∴', color: '#bc8cff', items: ['CLIP', 'BLIP', 'ONNX Runtime', 'Auto-Tagging'] },
 ];
 
 export const projects = [
