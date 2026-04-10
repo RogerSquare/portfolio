@@ -66,4 +66,4 @@ function App() {
   );
 }
 
-render(<App />);
+render(<App />, { enterAltScreenBuffer: true });
