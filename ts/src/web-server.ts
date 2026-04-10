@@ -92,6 +92,13 @@ function layout(title: string, nav: string, content: string): string {
     nav a { font-size: 14px; color: var(--text); opacity: 0.5; border-bottom: none; transition: opacity 0.2s; }
     nav a:hover { opacity: 1; border-bottom: none; }
     nav a.active { opacity: 0.9; }
+    .logo { position: absolute; top: 32px; left: 0; }
+    .logo a { border-bottom: none; display: block; opacity: 0.4; transition: opacity 0.3s; }
+    .logo a:hover { opacity: 0.9; border-bottom: none; }
+    .logo svg { width: 40px; height: 40px; }
+    @media (min-width: 1100px) {
+      .logo { position: fixed; top: 24px; left: 24px; }
+    }
     .name { font-size: 1.8rem; font-weight: 700; color: var(--text-deep); letter-spacing: -0.02em; }
     .name a { border-bottom: none; color: var(--text-deep); }
     .name a:hover { border-bottom: none; opacity: 0.8; }
@@ -179,6 +186,13 @@ function layout(title: string, nav: string, content: string): string {
   <div class="terminal-hint si si1">try it in your terminal &mdash; <code>ssh r-that.com</code></div>
   <main>
     <header class="si si2">
+      <div class="logo"><a href="/" aria-label="Home">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Replace this SVG with your own logo -->
+          <rect x="1" y="1" width="38" height="38" rx="8" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+          <text x="9" y="27" font-family="Inter,sans-serif" font-size="18" font-weight="700" fill="currentColor" opacity="0.8">RO</text>
+        </svg>
+      </a></div>
       <nav>${nav}</nav>
       <div class="name"><a href="/">${contact.name}</a></div>
       <div class="title">${contact.title}</div>
