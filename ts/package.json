@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/app.tsx",
+    "serve": "tsx src/ssh-server.tsx",
     "build": "tsc"
   },
   "keywords": [],
@@ -12,10 +13,12 @@
   "license": "MIT",
   "dependencies": {
     "ink": "^7.0.0",
-    "react": "^19.2.5"
+    "react": "^19.2.5",
+    "ssh2": "^1.17.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
+    "@types/ssh2": "^1.15.5",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   }
