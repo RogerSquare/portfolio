@@ -130,7 +130,7 @@ export default function Portfolio() {
             <Text key={`r-${i}`} color="#333">{line}</Text>
           ))}
           {lastBotMsg && (
-            <Text color="#555" wrap="truncate">{lastBotMsg.text.length > 36 ? lastBotMsg.text.slice(0, 33) + '...' : lastBotMsg.text}</Text>
+            <Text color="#555" wrap="wrap">{lastBotMsg.text}</Text>
           )}
         </Box>
       </Box>
