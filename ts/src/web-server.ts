@@ -767,7 +767,48 @@ function adminLayout(title: string, body: string): string {
 <body><div class="admin">${body}</div></body></html>`;
 }
 
-// Simple session via cookie
+// CSRF token generation
+import { randomBytes } from 'crypto';
+const csrfTokens = new Map<string, number>(); // token -> expiry timestamp
+
+function generateCsrf(): string {
+  const token = randomBytes(24).toString('hex');
+  csrfTokens.set(token, Date.now() + 3600000); // 1 hour
+  // Cleanup old tokens
+  for (const [t, exp] of csrfTokens) { if (exp < Date.now()) csrfTokens.delete(t); }
+  return token;
+}
+
+function validateCsrf(req: express.Request): boolean {
+  const token = b(req, '_csrf');
+  if (!token || !csrfTokens.has(token)) return false;
+  const exp = csrfTokens.get(token)!;
+  csrfTokens.delete(token); // single use
+  return exp > Date.now();
+}
+
+function csrfField(): string {
+  const token = generateCsrf();
+  return `<input type="hidden" name="_csrf" value="${token}">`;
+}
+
+// Rate limiting
+const loginAttempts = new Map<string, { count: number; reset: number }>();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_WINDOW = 60000; // 1 minute
+
+function checkLoginRate(ip: string): boolean {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || entry.reset < now) {
+    loginAttempts.set(ip, { count: 1, reset: now + LOGIN_WINDOW });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= MAX_LOGIN_ATTEMPTS;
+}
+
+// Session via cookie
 const ADMIN_COOKIE = 'portfolio_admin';
 function isAuthed(req: express.Request): boolean {
   const cookie = req.headers.cookie || '';
@@ -779,13 +820,24 @@ function requireAdmin(req: express.Request, res: express.Response, next: express
   next();
 }
 
+// CSRF validation middleware for all admin POST routes
+function requireCsrf(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (req.path === '/admin/login') { next(); return; } // login has its own csrf
+  if (!validateCsrf(req)) { res.status(403).send(adminLayout('Error', '<p style="color:var(--red)">Invalid or expired form token. Please go back and try again.</p>')); return; }
+  next();
+}
+
+app.post('/admin/*', requireAdmin, requireCsrf);
+
 app.get('/admin/login', (req, res) => {
   const err = req.query.err ? '<div class="flash flash-err">Invalid password</div>' : '';
+  const rate = req.query.rate ? '<div class="flash flash-err">Too many attempts. Wait a minute.</div>' : '';
   res.send(adminLayout('Admin Login', `
     <div class="login-box">
       <h1>admin</h1>
-      ${err}
+      ${err}${rate}
       <form method="POST" action="/admin/login">
+        ${csrfField()}
         <label>password</label>
         <input type="password" name="password" autofocus>
         <div class="form-actions"><button type="submit" class="btn btn-primary">login</button></div>
@@ -795,7 +847,10 @@ app.get('/admin/login', (req, res) => {
 });
 
 app.post('/admin/login', (req, res) => {
-  if (req.body.password === ADMIN_PASS) {
+  const ip = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  if (!checkLoginRate(ip)) { res.redirect('/admin/login?rate=1'); return; }
+  if (!validateCsrf(req)) { res.redirect('/admin/login?err=1'); return; }
+  if (b(req, 'password') === ADMIN_PASS) {
     res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=1; Path=/admin; HttpOnly; SameSite=Strict; Max-Age=86400`);
     res.redirect('/admin');
   } else {
@@ -814,9 +869,9 @@ function postForm(action: string, post: { slug: string; title: string; date: str
   return `
     <a href="/admin" style="font-size:0.85rem;opacity:0.5">&larr; back</a>
     <h1 style="margin-top:12px">${isNew ? 'new post' : 'edit post'}</h1>
-    <form method="POST" action="${action}">
+    <form method="POST" action="${action}">${csrfField()}
       <label>title</label>
-      <input type="text" name="title" value="${post.title.replace(/"/g, '&quot;')}" required>
+      <input type="text" name="title" value="${esc(post.title)}" required>
       <label>slug (filename without .md)</label>
       <input type="text" name="slug" value="${post.slug}" ${isNew ? '' : 'readonly style="opacity:0.5"'} required>
       <label>date (YYYY-MM-DD)</label>
@@ -900,7 +955,7 @@ app.get('/admin/about', requireAdmin, (_req, res) => {
   const data = getData();
   res.send(adminLayout('Edit About', adminNav('about') + `
     <h2>About</h2>
-    <form method="POST" action="/admin/about">
+    <form method="POST" action="/admin/about">${csrfField()}
       <label>About text</label>
       <textarea name="about" rows="8">${esc(data.about)}</textarea>
       <div class="form-actions"><button type="submit" class="btn btn-primary">Save</button></div>
@@ -921,7 +976,7 @@ app.get('/admin/contact', requireAdmin, (_req, res) => {
   const c = data.contact;
   res.send(adminLayout('Edit Contact', adminNav('contact') + `
     <h2>Contact Info</h2>
-    <form method="POST" action="/admin/contact">
+    <form method="POST" action="/admin/contact">${csrfField()}
       <label>Name</label><input type="text" name="name" value="${esc(c.name)}">
       <label>Title</label><input type="text" name="title" value="${esc(c.title)}">
       <label>Email</label><input type="text" name="email" value="${esc(c.email)}">
@@ -949,7 +1004,7 @@ app.get('/admin/skills', requireAdmin, (_req, res) => {
         <strong>${esc(s.name)}</strong>
         <div style="display:flex;gap:8px">
           <a href="/admin/skills/edit/${i}" class="btn">edit</a>
-          <form method="POST" action="/admin/skills/delete/${i}" style="display:inline"><button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
+          <form method="POST" action="/admin/skills/delete/${i}" style="display:inline">${csrfField()}<button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
         </div>
       </div>
       <div style="color:var(--text-muted);font-size:13px;margin-top:4px">${s.items.map(esc).join(', ')}</div>
@@ -960,7 +1015,7 @@ app.get('/admin/skills', requireAdmin, (_req, res) => {
     <div class="top-bar"><h2>Skills</h2></div>
     ${skillsHtml}
     <h2 style="margin-top:24px">Add / Edit Skill Category</h2>
-    <form method="POST" action="/admin/skills">
+    <form method="POST" action="/admin/skills">${csrfField()}
       <label>Category Name</label><input type="text" name="name" required>
       <label>Skills (comma separated)</label><input type="text" name="items" required>
       <div class="form-actions"><button type="submit" class="btn btn-primary">Add</button></div>
@@ -990,7 +1045,7 @@ app.get('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
   res.send(adminLayout('Edit Skill', adminNav('skills') + `
     <a href="/admin/skills" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>Edit: ${s.name}</h2>
-    <form method="POST" action="/admin/skills/edit/${req.params.idx}">
+    <form method="POST" action="/admin/skills/edit/${req.params.idx}">${csrfField()}
       <label>Category Name</label><input type="text" name="name" value="${esc(s.name)}" required>
       <label>Skills (comma separated)</label><input type="text" name="items" value="${esc(s.items.join(', '))}" required>
       <div class="form-actions"><button type="submit" class="btn btn-primary">Save</button></div>
@@ -1015,7 +1070,7 @@ app.get('/admin/projects', requireAdmin, (_req, res) => {
         <strong>${esc(p.name)}</strong>
         <div style="display:flex;gap:8px">
           <a href="/admin/projects/edit/${i}" class="btn">edit</a>
-          <form method="POST" action="/admin/projects/delete/${i}" style="display:inline"><button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
+          <form method="POST" action="/admin/projects/delete/${i}" style="display:inline">${csrfField()}<button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
         </div>
       </div>
       <div style="color:var(--text-muted);font-size:13px;margin-top:4px">${esc(p.desc)}</div>
@@ -1032,7 +1087,7 @@ app.get('/admin/projects/new', requireAdmin, (_req, res) => {
   res.send(adminLayout('New Project', adminNav('projects') + `
     <a href="/admin/projects" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>New Project</h2>
-    <form method="POST" action="/admin/projects/new">
+    <form method="POST" action="/admin/projects/new">${csrfField()}
       <label>Name</label><input type="text" name="name" required>
       <label>Description</label><textarea name="desc" rows="3"></textarea>
       <label>Tech (comma separated)</label><input type="text" name="tech">
@@ -1056,7 +1111,7 @@ app.get('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
   res.send(adminLayout('Edit Project', adminNav('projects') + `
     <a href="/admin/projects" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>Edit: ${p.name}</h2>
-    <form method="POST" action="/admin/projects/edit/${req.params.idx}">
+    <form method="POST" action="/admin/projects/edit/${req.params.idx}">${csrfField()}
       <label>Name</label><input type="text" name="name" value="${esc(p.name)}" required>
       <label>Description</label><textarea name="desc" rows="3">${esc(p.desc)}</textarea>
       <label>Tech (comma separated)</label><input type="text" name="tech" value="${esc(p.tech.join(', '))}">
@@ -1090,7 +1145,7 @@ app.get('/admin/experience', requireAdmin, (_req, res) => {
         <strong>${esc(e.role)}</strong> <span style="color:var(--text-muted);font-size:13px">${esc(e.period)}</span>
         <div style="display:flex;gap:8px">
           <a href="/admin/experience/edit/${i}" class="btn">edit</a>
-          <form method="POST" action="/admin/experience/delete/${i}" style="display:inline"><button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
+          <form method="POST" action="/admin/experience/delete/${i}" style="display:inline">${csrfField()}<button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
         </div>
       </div>
       <div style="color:var(--text-muted);font-size:13px;margin-top:4px">${esc(e.company)}</div>
@@ -1107,7 +1162,7 @@ app.get('/admin/experience/new', requireAdmin, (_req, res) => {
   res.send(adminLayout('New Role', adminNav('experience') + `
     <a href="/admin/experience" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>New Role</h2>
-    <form method="POST" action="/admin/experience/new">
+    <form method="POST" action="/admin/experience/new">${csrfField()}
       <label>Role</label><input type="text" name="role" required>
       <label>Company</label><input type="text" name="company" required>
       <label>Period</label><input type="text" name="period" required>
@@ -1131,7 +1186,7 @@ app.get('/admin/experience/edit/:idx', requireAdmin, (req, res) => {
   res.send(adminLayout('Edit Role', adminNav('experience') + `
     <a href="/admin/experience" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>Edit: ${e.role}</h2>
-    <form method="POST" action="/admin/experience/edit/${req.params.idx}">
+    <form method="POST" action="/admin/experience/edit/${req.params.idx}">${csrfField()}
       <label>Role</label><input type="text" name="role" value="${esc(e.role)}" required>
       <label>Company</label><input type="text" name="company" value="${esc(e.company)}" required>
       <label>Period</label><input type="text" name="period" value="${esc(e.period)}" required>
@@ -1173,7 +1228,7 @@ app.get('/admin', requireAdmin, (_req, res) => {
         <div class="actions">
           <a href="/blog/${p.slug}" class="btn" target="_blank">view</a>
           <a href="/admin/edit/${p.slug}" class="btn">edit</a>
-          <form method="POST" action="/admin/delete/${p.slug}" style="display:inline" onsubmit="return confirm('Delete this post?')">
+          <form method="POST" action="/admin/delete/${p.slug}" style="display:inline" onsubmit="return confirm('Delete this post?')">${csrfField()}
             <button type="submit" class="btn btn-danger">delete</button>
           </form>
         </div>
