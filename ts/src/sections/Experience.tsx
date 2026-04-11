@@ -1,5 +1,4 @@
-// Experience section -- tree view pattern from TUI showcase
-// Expand/collapse with visual indicators, timeline connectors
+// Experience section -- tree view with aligned connectors
 
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
@@ -29,55 +28,38 @@ export default function ExperienceSection() {
         const isExpanded = expanded.has(i);
         const isLast = i === experience.length - 1;
         const isCurrent = i === 0;
+        const connector = isLast ? ' ' : '│';
 
         return (
           <Box key={exp.role} flexDirection="column">
+            {/* Role header */}
             <Box>
-              {/* Timeline */}
-              <Box flexDirection="column" width={3} alignItems="center">
-                <Text color={isCurrent ? 'cyanBright' : 'gray'} dimColor={!isCurrent}>
-                  {isCurrent ? '●' : '○'}
-                </Text>
-              </Box>
-
-              {/* Content */}
-              <Box flexDirection="column" flexGrow={1}>
-                <Box gap={1}>
-                  <Text color={isActive ? 'whiteBright' : 'white'}>{exp.role}</Text>
-                  <Text color={isExpanded ? 'white' : 'gray'}>{isExpanded ? '▾' : '▸'}</Text>
-                </Box>
-                <Box gap={1} marginLeft={0}>
-                  <Text color="gray">{exp.company}</Text>
-                  <Text color="gray" dimColor>{exp.period}</Text>
-                </Box>
-              </Box>
+              <Text color="cyan" dimColor={!isCurrent}>{isCurrent ? '● ' : '○ '}</Text>
+              <Text bold={isActive}>{exp.role} {isExpanded ? '▾' : '▸'}</Text>
             </Box>
 
-            {/* Expanded details with tree connectors */}
-            {isExpanded && (
-              <Box>
-                <Box width={3} alignItems="center" flexDirection="column">
-                  {exp.desc.map((_, j) => (
-                    <Text key={`c-${j}`} color="blackBright">{isLast && j === exp.desc.length - 1 ? ' ' : '│'}</Text>
-                  ))}
-                </Box>
-                <Box flexDirection="column">
-                  {exp.desc.map((d, j) => (
-                    <Box key={`d-${j}`} gap={1}>
-                      <Text color="blackBright">{j === exp.desc.length - 1 ? '└─' : '├─'}</Text>
-                      <Text color="gray">{d}</Text>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            )}
+            {/* Company and period */}
+            <Box>
+              <Text dimColor>{connector} </Text>
+              <Text dimColor>{exp.company}  {exp.period}</Text>
+            </Box>
 
-            {/* Connector to next entry */}
+            {/* Expanded descriptions */}
+            {isExpanded && exp.desc.map((d, j) => {
+              const isDescLast = j === exp.desc.length - 1;
+              return (
+                <Box key={`d-${j}`}>
+                  <Text dimColor>{connector} </Text>
+                  <Text dimColor>{isDescLast ? '└─ ' : '├─ '}</Text>
+                  <Text dimColor>{d}</Text>
+                </Box>
+              );
+            })}
+
+            {/* Spacer between entries */}
             {!isLast && (
               <Box>
-                <Box width={3} alignItems="center" flexDirection="column">
-                  <Text color="blackBright">│</Text>
-                </Box>
+                <Text dimColor>│</Text>
               </Box>
             )}
           </Box>
@@ -85,7 +67,7 @@ export default function ExperienceSection() {
       })}
 
       <Box marginTop={1}>
-        <Text color="gray" dimColor>↑↓ navigate · enter expand</Text>
+        <Text dimColor>↑↓ navigate · enter expand</Text>
       </Box>
     </Box>
   );

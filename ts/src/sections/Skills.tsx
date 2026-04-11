@@ -7,12 +7,12 @@ export default function SkillsSection() {
     <Box flexDirection="column">
       {skills.map(cat => (
         <Box key={cat.name} flexDirection="column" marginBottom={1}>
-          <Text color="cyanBright" dimColor>{cat.name.toLowerCase()}</Text>
-          <Text>
+          <Text bold>{cat.name.toLowerCase()}</Text>
+          <Text dimColor>
             {cat.items.map((s, i) => (
               <Text key={s}>
-                {i > 0 && <Text color="gray"> · </Text>}
-                <Text color="white">{s}</Text>
+                {i > 0 && <Text> · </Text>}
+                <Text>{s}</Text>
               </Text>
             ))}
           </Text>

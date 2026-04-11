@@ -1,5 +1,3 @@
-// About section -- streaming bio with stats
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text } from 'ink';
 import { about } from '../data.js';
@@ -28,18 +26,18 @@ export default function AboutSection() {
   return (
     <Box flexDirection="column">
       <Box width={52}>
-        <Text color="white" wrap="wrap">
+        <Text wrap="wrap">
           {about.slice(0, charIdx)}
-          {!done && <Text color="cyanBright" dimColor>{cursorVisible ? '▌' : ' '}</Text>}
+          {!done && <Text color="cyan">{cursorVisible ? '▌' : ' '}</Text>}
         </Text>
       </Box>
       {done && (
         <Box marginTop={1} gap={1}>
-          <Text color="white">10 years</Text>
-          <Text color="gray">·</Text>
-          <Text color="white">6+ projects</Text>
-          <Text color="gray">·</Text>
-          <Text color="white">5+ languages</Text>
+          <Text>10 years</Text>
+          <Text dimColor>·</Text>
+          <Text>6+ projects</Text>
+          <Text dimColor>·</Text>
+          <Text>5+ languages</Text>
         </Box>
       )}
     </Box>

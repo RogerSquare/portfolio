@@ -16,9 +16,9 @@ export default function ProjectsSection() {
         const isActive = i === cursor;
         return (
           <Box key={p.name} flexDirection="column" marginBottom={1}>
-            <Text color={isActive ? 'cyanBright' : 'white'}>{p.name}</Text>
-            <Text color="gray">{p.desc}</Text>
-            <Text color="gray" dimColor>{p.tech.join(' · ')}</Text>
+            <Text bold={isActive}>{p.name}</Text>
+            <Text dimColor>{p.desc}</Text>
+            <Text dimColor>{p.tech.join(' · ')}</Text>
           </Box>
         );
       })}
