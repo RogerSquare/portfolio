@@ -1009,8 +1009,8 @@ function requireCsrf(req: express.Request, res: express.Response, next: express.
 // CSRF middleware for all admin POST routes (Express 5 compatible)
 app.use('/admin', (req, res, next) => {
   if (req.method !== 'POST') { next(); return; }
-  if (!isAuthed(req)) { res.redirect('/admin/login'); return; }
   if (req.path === '/login') { next(); return; }
+  if (!isAuthed(req)) { res.redirect('/admin/login'); return; }
   if (!validateCsrf(req)) { res.status(403).send(adminLayout('Error', '<p style="color:#f85149">Invalid or expired form token. Please go back and try again.</p>')); return; }
   next();
 });
