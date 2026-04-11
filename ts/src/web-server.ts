@@ -629,18 +629,19 @@ app.get('/photos', async (_req, res) => {
         ? '<p style="color:var(--text-muted);opacity:0.5">no photos available.</p>'
         : `<div class="photo-grid-wrap"><div class="photo-grid">
             ${photos.map((p, i) => `<img src="${photoThumbUrl(p.id)}" data-full="${photoFullUrl(p.id)}" alt="${p.originalFileName}" loading="lazy" onclick="openLightbox(${i})">`).join('')}
-          </div></div>
-          <div class="lightbox" id="lightbox">
-            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-            <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1)">&lsaquo;</button>
-            <img id="lightbox-img" src="" alt="">
-            <button class="lightbox-nav lightbox-next" onclick="navLightbox(1)">&rsaquo;</button>
-            <div class="lightbox-counter" id="lightbox-counter"></div>
-          </div>`
+          </div></div>`
       }
     </section>`;
 
-  const extra = `<script>
+  const extra = `
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1)">&lsaquo;</button>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="navLightbox(1)">&rsaquo;</button>
+    <div class="lightbox-counter" id="lightbox-counter"></div>
+  </div>
+  <script>
     var lbIdx = 0;
     var lbImgs = document.querySelectorAll('.photo-grid img');
     var lbEl = document.getElementById('lightbox');
