@@ -7,7 +7,8 @@
     "dev": "tsx src/app.tsx",
     "serve": "tsx src/ssh-server.tsx",
     "web": "tsx src/web-server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "Roger Ochoa",
@@ -28,6 +29,7 @@
     "@types/react": "^19.2.14",
     "@types/ssh2": "^1.15.5",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^3.1.1"
   }
 }

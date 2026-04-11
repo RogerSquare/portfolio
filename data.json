@@ -9,44 +9,96 @@
     "Website": "r-that.com",
     "Location": "Houston, TX"
   },
-  "About": "Transitioning from a robust background in Systems Engineering and Infrastructure to dedicated Software Development. I leverage my deep IT experience to build efficient, automated, and scalable software solutions. Passionate about coding, I specialize in creating tools that optimize workflows, utilizing platforms like PowerApps, Go, and scripting languages to solve complex business problems.",
+  "About": "Software Engineer building full-stack applications, terminal UIs, and AI-powered tools. With a foundation in enterprise infrastructure and systems engineering, I bring a strong focus on automation, reliability, and scalable architecture to every project I build. I work across the stack — from React and Swift frontends to Node.js and Go backends — and enjoy solving problems that bridge hardware and software.",
   "Skills": [
     {
-      "Name": "Development & Scripting",
+      "Name": "Languages",
       "Level": 5,
-      "Skills": ["Go", "PowerApps", "AutoIT", "Shell/PowerShell Scripting", "Software Architecture"]
+      "Skills": ["Go", "TypeScript", "JavaScript", "Swift", "Python", "PowerShell"]
     },
     {
-      "Name": "Infrastructure & Automation",
+      "Name": "Frontend",
       "Level": 5,
-      "Skills": ["VDI", "HPDM", "SCCM", "VSOM", "Automation Workflows", "System Design"]
+      "Skills": ["React", "SwiftUI", "Ink (Terminal)", "Tailwind CSS", "Vite"]
     },
     {
-      "Name": "Core Competencies",
+      "Name": "Backend & Data",
       "Level": 5,
-      "Skills": ["Professional & Efficient", "Consistent", "Empathetic", "Team Player", "Fast Learner", "Self-Motivated"]
+      "Skills": ["Node.js", "Express", "SQLite", "REST APIs", "JWT Auth", "WebSockets"]
+    },
+    {
+      "Name": "Infrastructure",
+      "Level": 5,
+      "Skills": ["Docker", "VDI", "SCCM", "Git", "CI/CD", "Linux"]
+    },
+    {
+      "Name": "AI / ML",
+      "Level": 5,
+      "Skills": ["CLIP", "BLIP", "ONNX Runtime", "Ollama", "Prompt Engineering"]
     }
   ],
   "Projects": [
     {
-      "Name": "Terminal Portfolio Showcase",
-      "Description": "A beautiful, interactive terminal-based portfolio built using the Model-View-Update (MVU) pattern to showcase software development and engineering skills natively in the command line.",
+      "Name": "Artifex",
+      "Description": "Self-hosted AI image gallery with ML-powered auto-tagging, NSFW detection, and federation.",
+      "Technologies": ["React", "Express", "SQLite", "Python"],
+      "Link": "github.com/RogerSquare/Artifex",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "Agent Task Board",
+      "Description": "Kanban-style task management system for autonomous AI developer agents with real-time sync, embedded terminals, and service management.",
+      "Technologies": ["React", "Node.js", "Express", "Socket.IO"],
+      "Link": "github.com/RogerSquare/agent-task-board",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "Terminal UI Showcase",
+      "Description": "30 interactive terminal UI demos exploring animations, components, and interaction patterns.",
+      "Technologies": ["TypeScript", "React", "Ink"],
+      "Link": "github.com/RogerSquare/terminal-ui-showcase",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "markstack",
+      "Description": "Bookmark manager REST API with JWT auth, pagination, search, and OpenAPI/Swagger documentation.",
+      "Technologies": ["TypeScript", "Express", "SQLite", "Swagger"],
+      "Link": "github.com/RogerSquare/markstack",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "dockview",
+      "Description": "Lightweight Docker homelab dashboard with real-time container monitoring and management.",
+      "Technologies": ["TypeScript", "Express", "Socket.IO", "Docker"],
+      "Link": "github.com/RogerSquare/dockview",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "mdtask",
+      "Description": "Terminal task manager CLI using Markdown files with YAML frontmatter. Published to npm.",
+      "Technologies": ["TypeScript", "Commander", "gray-matter"],
+      "Link": "github.com/RogerSquare/mdtask",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "Lumeo",
+      "Description": "Native iOS app for AI image generation with GPT-4o mini prompt assistant.",
+      "Technologies": ["Swift", "SwiftUI", "Replicate API"],
+      "Link": "github.com/RogerSquare/Lumeo",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "GameThemeMusic",
+      "Description": "Steam Deck plugin that plays theme music on game pages via Decky Loader.",
+      "Technologies": ["TypeScript", "React", "Decky API"],
+      "Link": "github.com/RogerSquare/SDH-GameThemeMusic",
+      "LiveDemo": ""
+    },
+    {
+      "Name": "Terminal Portfolio",
+      "Description": "SSH-accessible terminal portfolio built with Go and the Charm Bracelet ecosystem.",
       "Technologies": ["Go", "Bubble Tea", "Lip Gloss"],
       "Link": "github.com/RogerSquare/portfolio",
-      "LiveDemo": ""
-    },
-    {
-      "Name": "Flash Alert Tool",
-      "Description": "Researched and developed a PowerApps solution for the Gulf Coast Division, providing an intuitive, fast application to send scheduled and unscheduled downtime alerts, allowing engineering teams to focus on critical issues.",
-      "Technologies": ["PowerApps", "UI/UX Design", "Database Integration"],
-      "Link": "",
-      "LiveDemo": ""
-    },
-    {
-      "Name": "PAR Tracking Application",
-      "Description": "Architected and created a PAR tracking application for the West Houston team to provide precise tracking of stock levels and generate streamlined presentations for executive CFO approvals.",
-      "Technologies": ["PowerApps", "Data Analytics"],
-      "Link": "",
       "LiveDemo": ""
     }
   ],
