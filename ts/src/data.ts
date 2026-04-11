@@ -9,9 +9,7 @@ export const contact = {
 
 export const about = `Software engineer with a systems background. I build full-stack applications, developer tools, and infrastructure automation.
 
-Ten years of solving problems \u2014 first on the service desk, now in code.
-
-TypeScript, Go, Swift, Python. Houston, TX.`;
+Ten years of solving problems \u2014 first on the service desk, now in code.`;
 
 export const aboutWeb = about;
 
