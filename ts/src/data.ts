@@ -7,9 +7,7 @@ export const contact = {
   location: 'Houston, TX',
 };
 
-export const about = `Software engineer with a systems background. I build full-stack applications, developer tools, and infrastructure automation.
-
-Ten years of solving problems \u2014 first on the service desk, now in code.`;
+export const about = 'Transitioning from a robust background in Systems Engineering and Infrastructure to dedicated Software Development. I leverage my deep IT experience to build efficient, automated, and scalable software solutions. Passionate about coding, I specialize in creating tools that optimize workflows, utilizing platforms like Go, React, TypeScript, and Python to solve complex business problems.';
 
 export const aboutWeb = about;
 
