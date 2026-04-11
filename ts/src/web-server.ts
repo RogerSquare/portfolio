@@ -2,6 +2,7 @@
 // Usage: npm run web (listens on port 3000)
 
 import express from 'express';
+import compression from 'compression';
 import { getContact, getAbout, getSkills, getProjects, getExperience, getData, saveData, DATA_PATH } from './data.js';
 
 const app = express();
@@ -13,6 +14,7 @@ const IMMICH_ALBUM_ID = process.env.IMMICH_ALBUM_ID || '';
 const PHOTO_CACHE_TTL = 10 * 60 * 1000; // 10 min
 
 app.use(express.urlencoded({ extended: true }));
+app.use(compression());
 
 // Security headers
 app.use((_req, res, next) => {
@@ -474,6 +476,7 @@ function navLinks(active: string): string {
 // ---- ROBOTS.TXT ----
 app.get('/robots.txt', (_req, res) => {
   res.setHeader('Content-Type', 'text/plain');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
   res.send(`User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: https://r-that.com/sitemap.xml\n`);
 });
 
@@ -484,6 +487,7 @@ app.get('/sitemap.xml', (_req, res) => {
   const urls = pages.map(p => `  <url><loc>https://r-that.com${p}</loc></url>`);
   posts.forEach(p => urls.push(`  <url><loc>https://r-that.com/blog/${esc(p.slug)}</loc>${p.date ? `<lastmod>${p.date}</lastmod>` : ''}</url>`));
   res.setHeader('Content-Type', 'application/xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`);
 });
 
@@ -499,6 +503,7 @@ app.get('/blog/feed.xml', (_req, res) => {
     <guid>https://r-that.com/blog/${esc(p.slug)}</guid>
   </item>`).join('\n');
   res.setHeader('Content-Type', 'application/rss+xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
   res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
@@ -1361,6 +1366,29 @@ app.get('/admin', requireAdmin, (_req, res) => {
       </div>
     `).join('')}
   `));
+});
+
+// ---- 404 ----
+app.use((req, res) => {
+  res.status(404).send(layout('404 — Not Found', '', `
+    <section class="si" style="text-align:center;padding:4rem 1rem">
+      <h1 style="font-size:4rem;font-family:'DM Mono',monospace;color:var(--accent);margin-bottom:1rem">404</h1>
+      <p style="color:var(--text-muted);font-size:1.1rem;margin-bottom:2rem">The page <code style="color:var(--text-dim)">${esc(req.path)}</code> doesn't exist.</p>
+      <a href="/" style="color:var(--accent);text-decoration:none;border:1px solid var(--border);padding:.5rem 1.5rem;border-radius:6px;font-size:.9rem">back to home</a>
+    </section>
+  `, false, { description: 'Page not found', path: req.path }));
+});
+
+// ---- 500 ----
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Server error:', err);
+  res.status(500).send(layout('500 — Server Error', '', `
+    <section class="si" style="text-align:center;padding:4rem 1rem">
+      <h1 style="font-size:4rem;font-family:'DM Mono',monospace;color:var(--accent);margin-bottom:1rem">500</h1>
+      <p style="color:var(--text-muted);font-size:1.1rem;margin-bottom:2rem">Something went wrong on the server.</p>
+      <a href="/" style="color:var(--accent);text-decoration:none;border:1px solid var(--border);padding:.5rem 1.5rem;border-radius:6px;font-size:.9rem">back to home</a>
+    </section>
+  `, false, { description: 'Server error' }));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
