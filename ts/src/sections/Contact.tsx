@@ -37,15 +37,15 @@ export default function ContactSection() {
         const isActive = i === cursor;
         return (
           <Box key={item.label} gap={1}>
-            <Text color="cyan" dimColor>{item.label.padEnd(10)}</Text>
-            <Text color={isActive ? 'white' : 'gray'}>{item.value}</Text>
+            <Text color="gray" dimColor>{item.label.padEnd(10)}</Text>
+            <Text color={isActive ? 'whiteBright' : 'gray'} dimColor={!isActive}>{item.value}</Text>
           </Box>
         );
       })}
       <Box marginTop={1}>
         {toast
-          ? <Text color="green">{toast}</Text>
-          : <Text color="blackBright">↑↓ select  enter copy</Text>
+          ? <Text color="white" dimColor>{toast}</Text>
+          : <Text color="blackBright">↑↓ select · enter copy</Text>
         }
       </Box>
     </Box>

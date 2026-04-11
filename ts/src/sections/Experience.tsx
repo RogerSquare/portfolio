@@ -26,18 +26,18 @@ export default function ExperienceSection() {
         const isExpanded = expanded.has(i);
         return (
           <Box key={exp.role} flexDirection="column" marginBottom={1}>
-            <Text color={isActive ? 'white' : 'gray'}>{exp.role}</Text>
+            <Text color={isActive ? 'whiteBright' : 'white'} dimColor={!isActive}>{exp.role}</Text>
             <Box gap={1}>
-              <Text color="blue">{exp.company}</Text>
-              <Text color="yellow" dimColor>{exp.period}</Text>
+              <Text color="gray">{exp.company}</Text>
+              <Text color="blackBright">{exp.period}</Text>
             </Box>
             {isExpanded && exp.desc.map((d, j) => (
-              <Text key={`d-${j}`} color="gray">  - {d}</Text>
+              <Text key={`d-${j}`} color="gray" dimColor>  - {d}</Text>
             ))}
           </Box>
         );
       })}
-      <Text color="blackBright">↑↓ navigate  enter expand/collapse</Text>
+      <Text color="blackBright">↑↓ navigate · enter expand</Text>
     </Box>
   );
 }
