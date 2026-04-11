@@ -153,17 +153,8 @@ export default function Portfolio() {
             <ActiveContent />
           </Box>
 
-          {/* Vertical divider -- stretches with content */}
-          <Box flexDirection="column" marginX={1} alignSelf="stretch">
-            <Box flexDirection="column" flexGrow={1}>
-              {Array.from({ length: 50 }, (_, i) => (
-                <Text key={`div-${i}`} color="#222">│</Text>
-              ))}
-            </Box>
-          </Box>
-
-          {/* Robot + speech -- fixed width, pinned to top */}
-          <Box flexDirection="column" width={30} alignItems="center" flexShrink={0}>
+          {/* Robot + speech -- fixed width, pinned to top, left border as divider */}
+          <Box flexDirection="column" width={30} alignItems="center" flexShrink={0} borderStyle="single" borderColor="#222" borderLeft borderTop={false} borderRight={false} borderBottom={false} paddingLeft={1}>
             <Box flexDirection="column" alignItems="center">
               {frame.map((line, i) => {
                 if (i !== 2) return <Text key={`r-${i}`} color="#333">{line}</Text>;
