@@ -59,10 +59,10 @@ export async function streamResponse(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'qwen2.5:0.5b',
+        model: 'qwen2.5:1.5b',
         messages: ollamaMessages,
         stream: true,
-        options: { temperature: 0.8, num_predict: 80 },
+        options: { temperature: 1.0, num_predict: 60 },
       }),
     });
 
