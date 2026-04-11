@@ -408,11 +408,11 @@ async function fetchPhotos(): Promise<PhotoAsset[]> {
 }
 
 function photoThumbUrl(id: string): string {
-  return `${IMMICH_URL}/api/assets/${id}/thumbnail?key=${IMMICH_SHARE_KEY}&size=thumbnail`;
+  return `/api/photo/${id}/thumb`;
 }
 
 function photoFullUrl(id: string): string {
-  return `${IMMICH_URL}/api/assets/${id}/thumbnail?key=${IMMICH_SHARE_KEY}&size=preview`;
+  return `/api/photo/${id}/full`;
 }
 
 function navLinks(active: string): string {
@@ -631,6 +631,35 @@ app.get('/blog/:slug', (req, res) => {
     </section>`;
 
   res.send(layout(`${post.title} - ${contact.name}`, navLinks('blog'), content));
+});
+
+// ---- PHOTO PROXY (hides Immich API key from client) ----
+app.get('/api/photo/:id/thumb', async (req, res) => {
+  if (!IMMICH_SHARE_KEY) { res.status(404).end(); return; }
+  try {
+    const url = `${IMMICH_URL}/api/assets/${req.params.id}/thumbnail?key=${IMMICH_SHARE_KEY}&size=thumbnail`;
+    const resp = await fetch(url);
+    if (!resp.ok || !resp.body) { res.status(resp.status).end(); return; }
+    res.setHeader('Content-Type', resp.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    const reader = resp.body.getReader();
+    const pump = async () => { const { done, value } = await reader.read(); if (done) { res.end(); return; } res.write(value); await pump(); };
+    await pump();
+  } catch { res.status(500).end(); }
+});
+
+app.get('/api/photo/:id/full', async (req, res) => {
+  if (!IMMICH_SHARE_KEY) { res.status(404).end(); return; }
+  try {
+    const url = `${IMMICH_URL}/api/assets/${req.params.id}/thumbnail?key=${IMMICH_SHARE_KEY}&size=preview`;
+    const resp = await fetch(url);
+    if (!resp.ok || !resp.body) { res.status(resp.status).end(); return; }
+    res.setHeader('Content-Type', resp.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    const reader = resp.body.getReader();
+    const pump = async () => { const { done, value } = await reader.read(); if (done) { res.end(); return; } res.write(value); await pump(); };
+    await pump();
+  } catch { res.status(500).end(); }
 });
 
 // ---- PHOTOS ----
