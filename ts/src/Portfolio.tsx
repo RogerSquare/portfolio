@@ -38,37 +38,12 @@ export default function Portfolio() {
 
   const handleLoadDone = useCallback(() => setLoading(false), []);
 
-  // Start typing a bot message
-  function startTyping(text: string) {
-    setTypingText(text);
-    setTypingIdx(0);
-    setIsTyping(true);
-  }
-
-  // Typing animation tick
-  useEffect(() => {
-    if (!isTyping) return;
-    if (typingIdx >= typingText.length) {
-      // Done typing -- commit full message
-      setChatMessages(prev => [...prev.slice(-4), { from: 'bot', text: typingText }]);
-      setIsTyping(false);
-      setTypingText('');
-      setTypingIdx(0);
-      setRobotState('idle');
-      return;
-    }
-    // Alternate talk frames while typing
-    setRobotState(typingIdx % 6 < 3 ? 'talk1' : 'talk2');
-    const timer = setTimeout(() => setTypingIdx(prev => prev + 1), 35 + Math.random() * 20);
-    return () => clearTimeout(timer);
-  }, [isTyping, typingIdx, typingText]);
-
   // Greeting on first load
   useEffect(() => {
     if (loading || hasGreeted.current) return;
     hasGreeted.current = true;
     const g = randomGreeting();
-    startTyping(g);
+    setChatMessages([{ from: 'bot', text: g }]);
   }, [loading]);
 
   // Blink
@@ -89,7 +64,7 @@ export default function Portfolio() {
       setIdleTicks(prev => {
         if (prev > 0 && prev % 4 === 0 && !isTyping) {
           const quip = randomIdleQuip();
-          startTyping(quip);
+          setChatMessages(m => [...m.slice(-4), { from: 'bot', text: quip }]);
         }
         return prev + 1;
       });
@@ -202,14 +177,29 @@ export default function Portfolio() {
                 );
               })}
             </Box>
-            {(isTyping || lastBotMsg) && (
-              <Box width={28} marginTop={1} justifyContent="center">
-                <Text color="#444" wrap="wrap">
-                  {isTyping ? typingText.slice(0, typingIdx) : lastBotMsg?.text}
-                  {isTyping && <Text color="#555">█</Text>}
-                </Text>
-              </Box>
-            )}
+            <Box flexDirection="column" width={28} marginTop={1}>
+              {/* Fading message history -- older messages dimmer */}
+              {chatMessages.slice(-3).map((msg, i, arr) => {
+                const age = arr.length - 1 - i;
+                const color = msg.from === 'bot'
+                  ? (age === 0 ? '#555' : age === 1 ? '#333' : '#222')
+                  : (age === 0 ? '#666' : '#333');
+                return (
+                  <Box key={`cm-${i}`} marginBottom={0}>
+                    <Text color={color} wrap="wrap" dimColor={age > 1}>{msg.from === 'user' ? '> ' : ''}{msg.text}</Text>
+                  </Box>
+                );
+              })}
+              {/* Currently streaming response */}
+              {isTyping && (
+                <Box>
+                  <Text color="#555" wrap="wrap">
+                    {typingText}
+                    <Text color="#00bcd4">█</Text>
+                  </Text>
+                </Box>
+              )}
+            </Box>
           </Box>
         </Box>
       </Box>

@@ -61,7 +61,7 @@ export async function streamResponse(
         model: 'qwen2.5:1.5b',
         messages: ollamaMessages,
         stream: true,
-        options: { temperature: 0.6, num_predict: 120 },
+        options: { temperature: 0.6 },
       }),
     });
 
