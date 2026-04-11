@@ -487,7 +487,7 @@ app.get('/projects', (_req, res) => {
   const projects = getProjects();
   const content = `
     <section class="si si3" style="padding-top:48px">
-      <a href="/" class="back-link">&larr; home</a>
+
       <div class="page-title">projects</div>
       ${projects.map((p, i) => `
         <div class="project si si${Math.min(i + 4, 12)}">
@@ -507,7 +507,7 @@ app.get('/experience', (_req, res) => {
   const experience = getExperience();
   const content = `
     <section class="si si3" style="padding-top:48px">
-      <a href="/" class="back-link">&larr; home</a>
+
       <div class="page-title">experience</div>
       ${experience.map((exp, i) => `
         <div class="exp-item si si${Math.min(i + 4, 12)}">
@@ -574,7 +574,7 @@ app.get('/blog', (req, res) => {
 
   const content = `
     <section class="si si3" style="padding-top:48px">
-      <a href="/" class="back-link">&larr; home</a>
+
       <div class="page-title">blog${tag ? ` <span style="font-weight:400;font-size:0.9rem;color:var(--text-muted)">tagged: ${tag}</span>` : ''}</div>
       ${posts.length === 0
         ? '<p style="color:var(--text-muted);opacity:0.5">no posts yet.</p>'
@@ -603,7 +603,7 @@ app.get('/blog/:slug', (req, res) => {
 
   const content = `
     <section class="si si3" style="padding-top:48px">
-      <a href="/blog" class="back-link">&larr; blog</a>
+
       <div class="page-title">${post.title}</div>
       <div class="post-meta" style="margin-top:-24px;margin-bottom:32px">${post.date}${post.tags.length > 0 ? ' &mdash; ' + post.tags.map(t => `<a href="/blog?tag=${t}" style="border-bottom:none">#${t}</a>`).join(' ') : ''}</div>
       <div class="prose">${post.html}</div>
@@ -618,7 +618,7 @@ app.get('/photos', async (_req, res) => {
   const photos = await fetchPhotos();
   const content = `
     <section class="si si3" style="padding-top:48px">
-      <a href="/" class="back-link">&larr; home</a>
+
       <div class="page-title">photos</div>
       ${photos.length === 0
         ? '<p style="color:var(--text-muted);opacity:0.5">no photos available.</p>'
