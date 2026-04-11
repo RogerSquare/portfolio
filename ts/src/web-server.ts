@@ -471,6 +471,46 @@ function navLinks(active: string): string {
   return left + '<span class="nav-spacer"></span>' + right;
 }
 
+// ---- ROBOTS.TXT ----
+app.get('/robots.txt', (_req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(`User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: https://r-that.com/sitemap.xml\n`);
+});
+
+// ---- SITEMAP ----
+app.get('/sitemap.xml', (_req, res) => {
+  const posts = loadPosts();
+  const pages = ['/', '/projects', '/experience', '/blog', '/photos'];
+  const urls = pages.map(p => `  <url><loc>https://r-that.com${p}</loc></url>`);
+  posts.forEach(p => urls.push(`  <url><loc>https://r-that.com/blog/${esc(p.slug)}</loc>${p.date ? `<lastmod>${p.date}</lastmod>` : ''}</url>`));
+  res.setHeader('Content-Type', 'application/xml');
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`);
+});
+
+// ---- RSS FEED ----
+app.get('/blog/feed.xml', (_req, res) => {
+  const contact = getContact();
+  const posts = loadPosts();
+  const items = posts.map(p => `  <item>
+    <title>${esc(p.title)}</title>
+    <link>https://r-that.com/blog/${esc(p.slug)}</link>
+    <description>${esc(p.description || p.title)}</description>
+    <pubDate>${p.date ? new Date(p.date).toUTCString() : ''}</pubDate>
+    <guid>https://r-that.com/blog/${esc(p.slug)}</guid>
+  </item>`).join('\n');
+  res.setHeader('Content-Type', 'application/rss+xml');
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>${esc(contact.name)} - Blog</title>
+    <link>https://r-that.com/blog</link>
+    <description>Blog posts by ${esc(contact.name)}</description>
+    <language>en-us</language>
+${items}
+  </channel>
+</rss>`);
+});
+
 // ---- FAVICON ----
 app.get('/favicon.svg', (_req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
