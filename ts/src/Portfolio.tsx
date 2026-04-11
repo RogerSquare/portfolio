@@ -155,7 +155,7 @@ export default function Portfolio() {
 
       {/* Tabs and content */}
       <TabBar tabs={TAB_DEFS} activeIdx={activeTab} />
-      <Box flexDirection="column" borderStyle="round" borderColor="#222" paddingX={2} paddingY={1}>
+      <Box flexDirection="column" borderStyle="round" borderColor="blackBright" paddingX={2} paddingY={1}>
         <Box>
           {/* Section content */}
           <Box flexDirection="column" flexGrow={1}>
@@ -163,15 +163,15 @@ export default function Portfolio() {
           </Box>
 
           {/* Robot + speech -- fixed width, pinned to top, left border as divider */}
-          <Box flexDirection="column" width={30} alignItems="center" flexShrink={0} borderStyle="single" borderColor="#222" borderLeft borderTop={false} borderRight={false} borderBottom={false} paddingLeft={1}>
+          <Box flexDirection="column" width={30} alignItems="center" flexShrink={0} borderStyle="single" borderColor="blackBright" borderLeft borderTop={false} borderRight={false} borderBottom={false} paddingLeft={1}>
             <Box flexDirection="column" alignItems="center">
               {frame.map((line, i) => {
-                if (i !== 2) return <Text key={`r-${i}`} color="#333">{line}</Text>;
+                if (i !== 2) return <Text key={`r-${i}`} color="blackBright">{line}</Text>;
                 return (
                   <Text key={`r-${i}`}>
                     {line.split('').map((ch, j) => {
                       const isBox = '┌┐└┘│─┬┴├┤ '.includes(ch);
-                      return <Text key={`c-${j}`} color={isBox ? '#333' : '#00bcd4'}>{ch}</Text>;
+                      return <Text key={`c-${j}`} color={isBox ? 'blackBright' : 'cyan'}>{ch}</Text>;
                     })}
                   </Text>
                 );
@@ -180,12 +180,12 @@ export default function Portfolio() {
             <Box flexDirection="column" width={28} marginTop={1}>
               {/* Current response or streaming */}
               {isTyping ? (
-                <Text color="#555" wrap="wrap">
+                <Text color="gray" wrap="wrap">
                   {typingText}
-                  <Text color="#00bcd4">█</Text>
+                  <Text color="cyan">█</Text>
                 </Text>
               ) : chatMessages.length > 0 && chatMessages[chatMessages.length - 1].from === 'bot' ? (
-                <Text color="#444" wrap="wrap">{chatMessages[chatMessages.length - 1].text}</Text>
+                <Text color="gray" dimColor wrap="wrap">{chatMessages[chatMessages.length - 1].text}</Text>
               ) : null}
             </Box>
           </Box>
@@ -194,18 +194,18 @@ export default function Portfolio() {
 
       {/* Status line */}
       <Box marginTop={0} justifyContent="space-between">
-        <Text color="#333">
+        <Text color="blackBright">
           {chatMode ? 'esc back  enter send' : `${TAB_DEFS[activeTab].label}  ←→ tabs  / chat  q quit`}
         </Text>
-        <Text color="#222">{new Date().toLocaleTimeString('en-US', { hour12: false })}</Text>
+        <Text color="blackBright" dimColor>{new Date().toLocaleTimeString('en-US', { hour12: false })}</Text>
       </Box>
 
       {/* Chat input bar -- only visible in chat mode */}
       {chatMode && (
         <Box marginTop={0}>
-          <Text color="#666">{'> '}</Text>
-          <Text color="#999">{chatInput}</Text>
-          <Text color="#555">█</Text>
+          <Text color="gray">{'> '}</Text>
+          <Text color="white">{chatInput}</Text>
+          <Text color="gray">█</Text>
         </Box>
       )}
     </Box>

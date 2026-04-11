@@ -1,4 +1,4 @@
-// Contact section -- plain label:value list, no icons
+// Contact section -- plain label:value list
 
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
@@ -39,16 +39,15 @@ export default function ContactSection() {
         const isActive = i === cursor;
         return (
           <Box key={item.label} gap={1}>
-            <Text color="#444">{item.label.padEnd(10)}</Text>
-            <Text color={isActive ? '#bbb' : '#666'}>{item.value}</Text>
+            <Text color="gray" dimColor>{item.label.padEnd(10)}</Text>
+            <Text color={isActive ? 'white' : 'gray'}>{item.value}</Text>
           </Box>
         );
       })}
-
       <Box marginTop={1}>
         {toast
-          ? <Text color="#555">{toast}</Text>
-          : <Text color="#333">↑↓ select  enter copy</Text>
+          ? <Text color="gray">{toast}</Text>
+          : <Text color="blackBright">↑↓ select  enter copy</Text>
         }
       </Box>
     </Box>

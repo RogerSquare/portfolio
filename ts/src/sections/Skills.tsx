@@ -1,4 +1,4 @@
-// Skills section -- minimal text list, no colors or animations
+// Skills section -- minimal text list
 
 import React from 'react';
 import { Box, Text } from 'ink';
@@ -9,10 +9,8 @@ export default function SkillsSection() {
     <Box flexDirection="column">
       {skills.map(cat => (
         <Box key={cat.name} flexDirection="column" marginBottom={1}>
-          <Text color="#555">{cat.name.toLowerCase()}</Text>
-          <Text color="#888">
-            {cat.items.join(' / ')}
-          </Text>
+          <Text color="gray" dimColor>{cat.name.toLowerCase()}</Text>
+          <Text color="gray">{cat.items.join(' / ')}</Text>
         </Box>
       ))}
     </Box>

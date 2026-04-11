@@ -8,8 +8,8 @@ export default function Header() {
   return (
     <Box flexDirection="column" marginBottom={1}>
       <Text color="white" bold>{contact.name}</Text>
-      <Text color="#666">{contact.title}</Text>
-      <Text color="#444">{contact.location}</Text>
+      <Text color="gray">{contact.title}</Text>
+      <Text color="gray" dimColor>{contact.location}</Text>
     </Box>
   );
 }

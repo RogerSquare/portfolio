@@ -1,4 +1,4 @@
-// Experience section -- plain text blocks, no timeline decorations
+// Experience section -- plain text blocks
 
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
@@ -26,18 +26,17 @@ export default function ExperienceSection() {
       {experience.map((exp, i) => {
         const isActive = i === cursor;
         const isExpanded = expanded.has(i);
-
         return (
           <Box key={exp.role} flexDirection="column" marginBottom={1}>
-            <Text color={isActive ? '#bbb' : '#666'}>{exp.role}</Text>
-            <Text color="#444">{exp.company}  <Text color="#333">{exp.period}</Text></Text>
+            <Text color={isActive ? 'white' : 'gray'}>{exp.role}</Text>
+            <Text color="gray" dimColor>{exp.company}  {exp.period}</Text>
             {isExpanded && exp.desc.map((d, j) => (
-              <Text key={`d-${j}`} color="#555">  - {d}</Text>
+              <Text key={`d-${j}`} color="gray" dimColor>  - {d}</Text>
             ))}
           </Box>
         );
       })}
-      <Text color="#333">↑↓ navigate  enter expand/collapse</Text>
+      <Text color="blackBright">↑↓ navigate  enter expand/collapse</Text>
     </Box>
   );
 }

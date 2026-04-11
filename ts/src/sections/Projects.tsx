@@ -1,4 +1,4 @@
-// Projects section -- flat list, no borders or cards
+// Projects section -- flat list
 
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
@@ -18,9 +18,9 @@ export default function ProjectsSection() {
         const isActive = i === cursor;
         return (
           <Box key={p.name} flexDirection="column" marginBottom={1}>
-            <Text color={isActive ? '#bbb' : '#666'}>{p.name}</Text>
-            <Text color="#555">{p.desc}</Text>
-            <Text color="#333">{p.tech.join(' / ')}</Text>
+            <Text color={isActive ? 'white' : 'gray'}>{p.name}</Text>
+            <Text color="gray" dimColor>{p.desc}</Text>
+            <Text color="blackBright">{p.tech.join(' / ')}</Text>
           </Box>
         );
       })}

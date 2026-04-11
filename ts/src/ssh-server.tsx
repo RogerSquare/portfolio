@@ -1,16 +1,15 @@
 // SSH server entry point -- serves the portfolio to remote terminal clients
 // Usage: npm run serve (listens on port 2222)
 
-// Force color support BEFORE chalk/ink are imported
-process.env.FORCE_COLOR = '3';
-process.env.COLORTERM = 'truecolor';
+// Force 256-color support (level 2) for maximum terminal compatibility
+// macOS Terminal.app doesn't support truecolor (level 3)
+process.env.FORCE_COLOR = '2';
 process.env.TERM = 'xterm-256color';
 
 import React from 'react';
 import { render } from 'ink';
 import chalk from 'chalk';
-// Force chalk to use truecolor (level 3) regardless of stream detection
-chalk.level = 3;
+chalk.level = 2;
 
 import ssh2 from 'ssh2';
 const { Server } = ssh2;
