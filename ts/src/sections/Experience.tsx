@@ -1,5 +1,3 @@
-// Experience section -- plain text blocks
-
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { experience } from '../data.js';
@@ -29,9 +27,12 @@ export default function ExperienceSection() {
         return (
           <Box key={exp.role} flexDirection="column" marginBottom={1}>
             <Text color={isActive ? 'white' : 'gray'}>{exp.role}</Text>
-            <Text color="gray" dimColor>{exp.company}  {exp.period}</Text>
+            <Box gap={1}>
+              <Text color="blue">{exp.company}</Text>
+              <Text color="yellow" dimColor>{exp.period}</Text>
+            </Box>
             {isExpanded && exp.desc.map((d, j) => (
-              <Text key={`d-${j}`} color="gray" dimColor>  - {d}</Text>
+              <Text key={`d-${j}`} color="gray">  - {d}</Text>
             ))}
           </Box>
         );

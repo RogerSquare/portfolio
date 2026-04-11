@@ -1,5 +1,3 @@
-// Minimal tab bar -- muted text, subtle active indicator
-
 import React from 'react';
 import { Box, Text } from 'ink';
 
@@ -24,9 +22,9 @@ export default function TabBar({ tabs, activeIdx }: TabBarProps) {
           <Box key={tab.key} flexDirection="column">
             <Box paddingX={1} gap={1}>
               <Text color="gray" dimColor>{tab.key}</Text>
-              <Text color={isActive ? 'white' : 'gray'}>{tab.label}</Text>
+              <Text color={isActive ? 'cyan' : 'gray'}>{tab.label}</Text>
             </Box>
-            <Text color={isActive ? 'gray' : 'blackBright'}>
+            <Text color={isActive ? 'cyan' : 'blackBright'}>
               {(isActive ? '━' : '─').repeat(tab.label.length + 4)}
             </Text>
           </Box>

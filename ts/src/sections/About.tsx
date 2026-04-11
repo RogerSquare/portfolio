@@ -1,5 +1,3 @@
-// About section -- bio text with stats line
-
 import React from 'react';
 import { Box, Text } from 'ink';
 import { about } from '../data.js';
@@ -10,8 +8,12 @@ export default function AboutSection() {
       <Box width={56}>
         <Text color="gray" wrap="wrap">{about}</Text>
       </Box>
-      <Box marginTop={1}>
-        <Text color="gray" dimColor>10 years  /  6+ projects  /  5+ languages</Text>
+      <Box marginTop={1} gap={1}>
+        <Text color="yellow">10 years</Text>
+        <Text color="blackBright">/</Text>
+        <Text color="blue">6+ projects</Text>
+        <Text color="blackBright">/</Text>
+        <Text color="green">5+ languages</Text>
       </Box>
     </Box>
   );

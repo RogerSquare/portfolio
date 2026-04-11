@@ -1,5 +1,3 @@
-// Contact section -- plain label:value list
-
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import { contact } from '../data.js';
@@ -39,14 +37,14 @@ export default function ContactSection() {
         const isActive = i === cursor;
         return (
           <Box key={item.label} gap={1}>
-            <Text color="gray" dimColor>{item.label.padEnd(10)}</Text>
+            <Text color="cyan" dimColor>{item.label.padEnd(10)}</Text>
             <Text color={isActive ? 'white' : 'gray'}>{item.value}</Text>
           </Box>
         );
       })}
       <Box marginTop={1}>
         {toast
-          ? <Text color="gray">{toast}</Text>
+          ? <Text color="green">{toast}</Text>
           : <Text color="blackBright">↑↓ select  enter copy</Text>
         }
       </Box>

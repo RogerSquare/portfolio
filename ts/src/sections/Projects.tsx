@@ -1,5 +1,3 @@
-// Projects section -- flat list
-
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { projects } from '../data.js';
@@ -18,9 +16,9 @@ export default function ProjectsSection() {
         const isActive = i === cursor;
         return (
           <Box key={p.name} flexDirection="column" marginBottom={1}>
-            <Text color={isActive ? 'white' : 'gray'}>{p.name}</Text>
-            <Text color="gray" dimColor>{p.desc}</Text>
-            <Text color="blackBright">{p.tech.join(' / ')}</Text>
+            <Text color={isActive ? 'cyan' : 'white'}>{p.name}</Text>
+            <Text color="gray">{p.desc}</Text>
+            <Text color="yellow" dimColor>{p.tech.join(' / ')}</Text>
           </Box>
         );
       })}
