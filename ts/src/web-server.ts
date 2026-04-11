@@ -2,7 +2,7 @@
 // Usage: npm run web (listens on port 3000)
 
 import express from 'express';
-import { contact, about, skills, projects, experience } from './data.js';
+import { contact, aboutWeb as about, skills, projects, experience } from './data.js';
 
 const app = express();
 const PORT = parseInt(process.env.WEB_PORT || '3000', 10);
