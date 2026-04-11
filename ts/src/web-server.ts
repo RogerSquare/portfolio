@@ -31,6 +31,12 @@ function b(req: express.Request, field: string): string {
   return typeof val === 'string' ? val : Array.isArray(val) ? val[0] || '' : '';
 }
 
+// Safe array index from params -- returns -1 if out of bounds
+function safeIdx(params: Record<string, any>, key: string, arr: any[]): number {
+  const i = parseInt(params[key] as string);
+  return (isNaN(i) || i < 0 || i >= arr.length) ? -1 : i;
+}
+
 // HTML escape to prevent XSS
 function esc(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -947,7 +953,9 @@ app.get('/admin/new', requireAdmin, (_req, res) => {
 app.post('/admin/new', requireAdmin, (req, res) => {
   const slug = b(req,'slug'), title = b(req,'title'), date = b(req,'date'), tags = b(req,'tags'), description = b(req,'description'), content = b(req,'content');
   const safeSlug = slug.replace(/[^a-z0-9-]/g, '');
-  const frontmatter = `---\ntitle: ${title}\ndate: ${date}\ntags: [${tags.split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: ${description}\n---\n\n`;
+  const yamlTitle = title.replace(/"/g, '\\"');
+  const yamlDesc = description.replace(/"/g, '\\"');
+  const frontmatter = `---\ntitle: "${yamlTitle}"\ndate: ${date}\ntags: [${tags.split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: "${yamlDesc}"\n---\n\n`;
   writeFileSync(join(POSTS_DIR, `${safeSlug}.md`), frontmatter + content, 'utf8');
   res.redirect('/admin');
 });
@@ -969,7 +977,9 @@ app.get('/admin/edit/:slug', requireAdmin, (req, res) => {
 app.post('/admin/edit/:slug', requireAdmin, (req, res) => {
   const title = b(req,'title'), date = b(req,'date'), tags = b(req,'tags'), description = b(req,'description'), content = b(req,'content');
   const slug = req.params.slug;
-  const frontmatter = `---\ntitle: ${title}\ndate: ${date}\ntags: [${tags.split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: ${description}\n---\n\n`;
+  const yamlTitle = title.replace(/"/g, '\\"');
+  const yamlDesc = description.replace(/"/g, '\\"');
+  const frontmatter = `---\ntitle: "${yamlTitle}"\ndate: ${date}\ntags: [${tags.split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: "${yamlDesc}"\n---\n\n`;
   writeFileSync(join(POSTS_DIR, `${slug}.md`), frontmatter + content, 'utf8');
   res.redirect('/admin');
 });
@@ -1080,15 +1090,18 @@ app.post('/admin/skills', requireAdmin, (req, res) => {
 
 app.post('/admin/skills/delete/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  data.skills.splice(parseInt(req.params.idx as string), 1);
+  const idx = safeIdx(req.params, 'idx', data.skills);
+  if (idx < 0) { res.redirect('/admin/skills'); return; }
+  data.skills.splice(idx, 1);
   saveData(data);
   res.redirect('/admin/skills');
 });
 
 app.get('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  const s = data.skills[parseInt(req.params.idx as string)];
-  if (!s) { res.redirect('/admin/skills'); return; }
+  const idx = safeIdx(req.params, 'idx', data.skills);
+  if (idx < 0) { res.redirect('/admin/skills'); return; }
+  const s = data.skills[idx];
   res.send(adminLayout('Edit Skill', adminNav('skills') + `
     <a href="/admin/skills" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>Edit: ${s.name}</h2>
@@ -1102,7 +1115,8 @@ app.get('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
 
 app.post('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  const i = parseInt(req.params.idx as string);
+  const i = safeIdx(req.params, 'idx', data.skills);
+  if (i < 0) { res.redirect('/admin/skills'); return; }
   data.skills[i] = { name: b(req,'name'), items: b(req,'items').split(',').map((s: string) => s.trim()).filter(Boolean) };
   saveData(data);
   res.redirect('/admin/skills');
@@ -1153,8 +1167,9 @@ app.post('/admin/projects/new', requireAdmin, (req, res) => {
 
 app.get('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  const p = data.projects[parseInt(req.params.idx as string)];
-  if (!p) { res.redirect('/admin/projects'); return; }
+  const idx = safeIdx(req.params, 'idx', data.projects);
+  if (idx < 0) { res.redirect('/admin/projects'); return; }
+  const p = data.projects[idx];
   res.send(adminLayout('Edit Project', adminNav('projects') + `
     <a href="/admin/projects" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>Edit: ${p.name}</h2>
@@ -1170,7 +1185,8 @@ app.get('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
 
 app.post('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  const i = parseInt(req.params.idx as string);
+  const i = safeIdx(req.params, 'idx', data.projects);
+  if (i < 0) { res.redirect('/admin/projects'); return; }
   data.projects[i] = { name: b(req,'name'), desc: b(req,'desc'), tech: b(req,'tech').split(',').map((s: string) => s.trim()).filter(Boolean), link: b(req,'link') };
   saveData(data);
   res.redirect('/admin/projects');
@@ -1178,7 +1194,9 @@ app.post('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
 
 app.post('/admin/projects/delete/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  data.projects.splice(parseInt(req.params.idx as string), 1);
+  const idx = safeIdx(req.params, 'idx', data.projects);
+  if (idx < 0) { res.redirect('/admin/projects'); return; }
+  data.projects.splice(idx, 1);
   saveData(data);
   res.redirect('/admin/projects');
 });
@@ -1228,8 +1246,9 @@ app.post('/admin/experience/new', requireAdmin, (req, res) => {
 
 app.get('/admin/experience/edit/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  const e = data.experience[parseInt(req.params.idx as string)];
-  if (!e) { res.redirect('/admin/experience'); return; }
+  const idx = safeIdx(req.params, 'idx', data.experience);
+  if (idx < 0) { res.redirect('/admin/experience'); return; }
+  const e = data.experience[idx];
   res.send(adminLayout('Edit Role', adminNav('experience') + `
     <a href="/admin/experience" style="font-size:13px;opacity:0.5">&larr; back</a>
     <h2>Edit: ${e.role}</h2>
@@ -1245,7 +1264,8 @@ app.get('/admin/experience/edit/:idx', requireAdmin, (req, res) => {
 
 app.post('/admin/experience/edit/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  const i = parseInt(req.params.idx as string);
+  const i = safeIdx(req.params, 'idx', data.experience);
+  if (i < 0) { res.redirect('/admin/experience'); return; }
   data.experience[i] = { role: b(req,'role'), company: b(req,'company'), period: b(req,'period'), desc: b(req,'desc').split('\n').map((s: string) => s.trim()).filter(Boolean) };
   saveData(data);
   res.redirect('/admin/experience');
@@ -1253,7 +1273,9 @@ app.post('/admin/experience/edit/:idx', requireAdmin, (req, res) => {
 
 app.post('/admin/experience/delete/:idx', requireAdmin, (req, res) => {
   const data = getData();
-  data.experience.splice(parseInt(req.params.idx as string), 1);
+  const idx = safeIdx(req.params, 'idx', data.experience);
+  if (idx < 0) { res.redirect('/admin/experience'); return; }
+  data.experience.splice(idx, 1);
   saveData(data);
   res.redirect('/admin/experience');
 });
