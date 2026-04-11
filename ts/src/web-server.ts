@@ -864,7 +864,7 @@ function adminLayout(title: string, body: string): string {
     .post-info .meta { font-size: 0.8rem; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; }
     .actions { display: flex; gap: 8px; }
     label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; margin-top: 16px; }
-    input[type=text], input[type=password] { width: 100%; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--font); outline: none; }
+    input[type=text], input[type=password], input[type=email], input[type=url] { width: 100%; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--font); outline: none; }
     input:focus { border-color: var(--accent); }
     textarea { width: 100%; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--mono); line-height: 1.6; outline: none; resize: vertical; }
     textarea:focus { border-color: var(--accent); }
@@ -874,9 +874,35 @@ function adminLayout(title: string, body: string): string {
     .flash-err { background: rgba(248,81,73,0.1); color: #f85149; border: 1px solid rgba(248,81,73,0.2); }
     .login-box { max-width: 320px; margin: 120px auto; }
     .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 6px; font-size: 13px; z-index: 9999; opacity: 0; transform: translateY(-10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .toast-ok { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
+    .toast-err { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
   </style>
 </head>
-<body><div class="admin">${body}</div></body></html>`;
+<body><div class="admin">${body}</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  var p = new URLSearchParams(location.search);
+  var msgs = {saved:'Saved successfully',deleted:'Deleted successfully',created:'Created successfully'};
+  var m = p.get('msg');
+  if (m && msgs[m]) {
+    var t = document.getElementById('toast');
+    t.textContent = msgs[m];
+    t.className = 'toast toast-ok show';
+    setTimeout(function(){ t.classList.remove('show'); }, 3000);
+    history.replaceState(null, '', location.pathname);
+  }
+  document.querySelectorAll('form').forEach(function(f){
+    f.addEventListener('submit', function(){
+      var btns = f.querySelectorAll('button[type=submit]');
+      btns.forEach(function(b){ b.disabled = true; b.style.opacity = '0.5'; });
+    });
+  });
+})();
+</script>
+</body></html>`;
 }
 
 // CSRF token generation
@@ -1023,7 +1049,7 @@ app.post('/admin/new', requireAdmin, (req, res) => {
   const yamlDesc = description.replace(/"/g, '\\"');
   const frontmatter = `---\ntitle: "${yamlTitle}"\ndate: ${date}\ntags: [${tags.split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: "${yamlDesc}"\n---\n\n`;
   writeFileSync(join(POSTS_DIR, `${safeSlug}.md`), frontmatter + content, 'utf8');
-  res.redirect('/admin');
+  res.redirect('/admin?msg=created');
 });
 
 app.get('/admin/edit/:slug', requireAdmin, (req, res) => {
@@ -1047,13 +1073,13 @@ app.post('/admin/edit/:slug', requireAdmin, (req, res) => {
   const yamlDesc = description.replace(/"/g, '\\"');
   const frontmatter = `---\ntitle: "${yamlTitle}"\ndate: ${date}\ntags: [${tags.split(',').map((t: string) => t.trim()).filter(Boolean).join(', ')}]\ndescription: "${yamlDesc}"\n---\n\n`;
   writeFileSync(join(POSTS_DIR, `${slug}.md`), frontmatter + content, 'utf8');
-  res.redirect('/admin');
+  res.redirect('/admin?msg=saved');
 });
 
 app.post('/admin/delete/:slug', requireAdmin, (req, res) => {
   const filePath = join(POSTS_DIR, `${req.params.slug}.md`);
   if (existsSync(filePath)) unlinkSync(filePath);
-  res.redirect('/admin');
+  res.redirect('/admin?msg=deleted');
 });
 
 // ---- ADMIN: Content Editors ----
@@ -1090,7 +1116,7 @@ app.post('/admin/about', requireAdmin, (req, res) => {
   const data = getData();
   data.about = b(req, 'about');
   saveData(data);
-  res.redirect('/admin/about');
+  res.redirect('/admin/about?msg=saved');
 });
 
 // Contact editor
@@ -1115,7 +1141,7 @@ app.post('/admin/contact', requireAdmin, (req, res) => {
   const data = getData();
   data.contact = { name: b(req,'name'), title: b(req,'title'), email: b(req,'email'), github: b(req,'github'), website: b(req,'website'), location: b(req,'location') };
   saveData(data);
-  res.redirect('/admin/contact');
+  res.redirect('/admin/contact?msg=saved');
 });
 
 // Skills editor
@@ -1151,7 +1177,7 @@ app.post('/admin/skills', requireAdmin, (req, res) => {
   const items = b(req,'items').split(',').map((s: string) => s.trim()).filter(Boolean);
   data.skills.push({ name: b(req,'name'), items });
   saveData(data);
-  res.redirect('/admin/skills');
+  res.redirect('/admin/skills?msg=created');
 });
 
 app.post('/admin/skills/delete/:idx', requireAdmin, (req, res) => {
@@ -1160,7 +1186,7 @@ app.post('/admin/skills/delete/:idx', requireAdmin, (req, res) => {
   if (idx < 0) { res.redirect('/admin/skills'); return; }
   data.skills.splice(idx, 1);
   saveData(data);
-  res.redirect('/admin/skills');
+  res.redirect('/admin/skills?msg=deleted');
 });
 
 app.get('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
@@ -1185,7 +1211,7 @@ app.post('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
   if (i < 0) { res.redirect('/admin/skills'); return; }
   data.skills[i] = { name: b(req,'name'), items: b(req,'items').split(',').map((s: string) => s.trim()).filter(Boolean) };
   saveData(data);
-  res.redirect('/admin/skills');
+  res.redirect('/admin/skills?msg=saved');
 });
 
 // Projects editor
@@ -1228,7 +1254,7 @@ app.post('/admin/projects/new', requireAdmin, (req, res) => {
   const data = getData();
   data.projects.push({ name: b(req,'name'), desc: b(req,'desc'), tech: b(req,'tech').split(',').map((s: string) => s.trim()).filter(Boolean), link: b(req,'link') });
   saveData(data);
-  res.redirect('/admin/projects');
+  res.redirect('/admin/projects?msg=created');
 });
 
 app.get('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
@@ -1255,7 +1281,7 @@ app.post('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
   if (i < 0) { res.redirect('/admin/projects'); return; }
   data.projects[i] = { name: b(req,'name'), desc: b(req,'desc'), tech: b(req,'tech').split(',').map((s: string) => s.trim()).filter(Boolean), link: b(req,'link') };
   saveData(data);
-  res.redirect('/admin/projects');
+  res.redirect('/admin/projects?msg=saved');
 });
 
 app.post('/admin/projects/delete/:idx', requireAdmin, (req, res) => {
@@ -1264,7 +1290,7 @@ app.post('/admin/projects/delete/:idx', requireAdmin, (req, res) => {
   if (idx < 0) { res.redirect('/admin/projects'); return; }
   data.projects.splice(idx, 1);
   saveData(data);
-  res.redirect('/admin/projects');
+  res.redirect('/admin/projects?msg=deleted');
 });
 
 // Experience editor
@@ -1307,7 +1333,7 @@ app.post('/admin/experience/new', requireAdmin, (req, res) => {
   const data = getData();
   data.experience.push({ role: b(req,'role'), company: b(req,'company'), period: b(req,'period'), desc: b(req,'desc').split('\n').map((s: string) => s.trim()).filter(Boolean) });
   saveData(data);
-  res.redirect('/admin/experience');
+  res.redirect('/admin/experience?msg=created');
 });
 
 app.get('/admin/experience/edit/:idx', requireAdmin, (req, res) => {
@@ -1334,7 +1360,7 @@ app.post('/admin/experience/edit/:idx', requireAdmin, (req, res) => {
   if (i < 0) { res.redirect('/admin/experience'); return; }
   data.experience[i] = { role: b(req,'role'), company: b(req,'company'), period: b(req,'period'), desc: b(req,'desc').split('\n').map((s: string) => s.trim()).filter(Boolean) };
   saveData(data);
-  res.redirect('/admin/experience');
+  res.redirect('/admin/experience?msg=saved');
 });
 
 app.post('/admin/experience/delete/:idx', requireAdmin, (req, res) => {
@@ -1343,7 +1369,7 @@ app.post('/admin/experience/delete/:idx', requireAdmin, (req, res) => {
   if (idx < 0) { res.redirect('/admin/experience'); return; }
   data.experience.splice(idx, 1);
   saveData(data);
-  res.redirect('/admin/experience');
+  res.redirect('/admin/experience?msg=deleted');
 });
 
 // Update admin dashboard to show nav
