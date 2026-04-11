@@ -7,21 +7,17 @@ export const contact = {
   location: 'Houston, TX',
 };
 
-export const about = `hey -- i'm roger.
+export const about = `ten years in IT, starting from the service desk and working my way through systems engineering. learned to automate what i could, and eventually realized i enjoyed building the tools more than using them.
 
-started in IT ten years ago on a service desk. moved into systems engineering, learned to automate the repetitive stuff, and fell in love with building software.
+now i focus on software development -- full-stack applications, developer tools, and infrastructure automation. i approach problems with patience and persistence, and take pride in writing clean, maintainable solutions.
 
-these days i write code -- tools and apps that scratch an itch or solve a problem. not the smartest person in the room but stubborn enough to figure things out.
+working in typescript, go, swift, and python. based in houston, tx.`;
 
-typescript, go, swift, python. still learning every day. houston, tx.`;
+export const aboutWeb = `ten years in IT, starting from the service desk and working my way through systems engineering. learned to automate what i could, and eventually realized i enjoyed building the tools more than using them.
 
-export const aboutWeb = `hey -- i'm roger.
+now i focus on software development -- full-stack applications, developer tools, and infrastructure automation. i approach problems with patience and persistence, and take pride in writing clean, maintainable solutions.
 
-i started in IT about ten years ago on a service desk, answering calls and solving problems one ticket at a time. over the years i moved into systems engineering, learned to automate the repetitive stuff, and somewhere along the way fell in love with building software.
-
-these days i spend most of my time writing code -- building tools and applications that scratch an itch or solve a problem i ran into. i'm not the smartest person in the room but i'm stubborn enough to figure things out and i genuinely enjoy the process of making something from nothing.
-
-i work mostly in typescript, go, swift, and python. still learning every day. based in houston.`;
+working in typescript, go, swift, and python. based in houston, tx.`;
 
 export const skills = [
   { name: 'Languages', icon: '◇', color: '#58a6ff', items: ['Go', 'Swift', 'TypeScript', 'JavaScript', 'Python', 'PowerShell'] },
