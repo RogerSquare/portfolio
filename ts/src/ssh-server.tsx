@@ -74,8 +74,7 @@ const server = new Server({ hostKeys: [hostKey] }, (client: any) => {
       session.on('shell', (accept: any) => {
         const channel = accept();
 
-        // Enter alternate screen buffer and hide cursor
-        channel.write('\x1b[?1049h\x1b[H\x1b[2J\x1b[?25l');
+        // Ink handles alternate screen via alternateScreen option
 
         // Create writable stream that pipes to the SSH channel
 
@@ -157,14 +156,13 @@ const server = new Server({ hostKeys: [hostKey] }, (client: any) => {
             exitOnCtrlC: false,
             patchConsole: false,
             interactive: true,
+            alternateScreen: true,
           });
 
           inkInstance.waitUntilExit().then(() => {
             // Restore alternate screen, show cursor
-            if (channel.writable) channel.write('\x1b[?25h\x1b[?1049l');
             channel.end();
           }).catch(() => {
-            if (channel.writable) channel.write('\x1b[?25h\x1b[?1049l');
             channel.end();
           });
         } catch (err) {
