@@ -851,7 +851,10 @@ app.get('/admin/skills', requireAdmin, (_req, res) => {
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <strong>${s.name}</strong>
-        <form method="POST" action="/admin/skills/delete/${i}" style="display:inline"><button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
+        <div style="display:flex;gap:8px">
+          <a href="/admin/skills/edit/${i}" class="btn">edit</a>
+          <form method="POST" action="/admin/skills/delete/${i}" style="display:inline"><button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">delete</button></form>
+        </div>
       </div>
       <div style="color:var(--text-muted);font-size:13px;margin-top:4px">${s.items.join(', ')}</div>
     </div>
@@ -880,6 +883,29 @@ app.post('/admin/skills', requireAdmin, (req, res) => {
 app.post('/admin/skills/delete/:idx', requireAdmin, (req, res) => {
   const data = getData();
   data.skills.splice(parseInt(req.params.idx as string), 1);
+  saveData(data);
+  res.redirect('/admin/skills');
+});
+
+app.get('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
+  const data = getData();
+  const s = data.skills[parseInt(req.params.idx as string)];
+  if (!s) { res.redirect('/admin/skills'); return; }
+  res.send(adminLayout('Edit Skill', adminNav('skills') + `
+    <a href="/admin/skills" style="font-size:13px;opacity:0.5">&larr; back</a>
+    <h2>Edit: ${s.name}</h2>
+    <form method="POST" action="/admin/skills/edit/${req.params.idx}">
+      <label>Category Name</label><input type="text" name="name" value="${s.name}" required>
+      <label>Skills (comma separated)</label><input type="text" name="items" value="${s.items.join(', ')}" required>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  `));
+});
+
+app.post('/admin/skills/edit/:idx', requireAdmin, (req, res) => {
+  const data = getData();
+  const i = parseInt(req.params.idx as string);
+  data.skills[i] = { name: b(req,'name'), items: b(req,'items').split(',').map((s: string) => s.trim()).filter(Boolean) };
   saveData(data);
   res.redirect('/admin/skills');
 });
