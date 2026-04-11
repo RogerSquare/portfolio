@@ -147,14 +147,22 @@ export default function Portfolio() {
       {/* Tabs and content */}
       <TabBar tabs={TAB_DEFS} activeIdx={activeTab} />
       <Box flexDirection="column" borderStyle="round" borderColor="#222" paddingX={2} paddingY={1}>
-        <Box justifyContent="space-between">
+        <Box>
           {/* Section content */}
           <Box flexDirection="column" flexGrow={1}>
             <ActiveContent />
           </Box>
-          {/* Robot + speech inside content box */}
-          <Box flexDirection="column" alignItems="flex-end" marginLeft={2} flexShrink={0}>
-            <Box flexDirection="column">
+
+          {/* Vertical divider */}
+          <Box flexDirection="column" marginX={1}>
+            {Array.from({ length: 10 }, (_, i) => (
+              <Text key={`div-${i}`} color="#222">│</Text>
+            ))}
+          </Box>
+
+          {/* Robot + speech -- fixed width, vertically centered */}
+          <Box flexDirection="column" width={30} justifyContent="center" alignItems="center" flexShrink={0}>
+            <Box flexDirection="column" alignItems="center">
               {frame.map((line, i) => {
                 if (i !== 2) return <Text key={`r-${i}`} color="#333">{line}</Text>;
                 return (
@@ -168,7 +176,7 @@ export default function Portfolio() {
               })}
             </Box>
             {(isTyping || lastBotMsg) && (
-              <Box width={28} marginTop={0}>
+              <Box width={28} marginTop={1} justifyContent="center">
                 <Text color="#444" wrap="wrap">
                   {isTyping ? typingText.slice(0, typingIdx) : lastBotMsg?.text}
                   {isTyping && <Text color="#555">█</Text>}
