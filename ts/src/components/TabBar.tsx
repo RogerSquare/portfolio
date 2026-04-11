@@ -21,10 +21,10 @@ export default function TabBar({ tabs, activeIdx }: TabBarProps) {
         return (
           <Box key={tab.key} flexDirection="column">
             <Box paddingX={1} gap={1}>
-              <Text color="gray" dimColor>{tab.key}</Text>
-              <Text color={isActive ? 'whiteBright' : 'gray'} dimColor={!isActive}>{tab.label}</Text>
+              <Text color="gray">{tab.key}</Text>
+              <Text color={isActive ? 'whiteBright' : 'gray'}>{tab.label}</Text>
             </Box>
-            <Text color={isActive ? 'white' : 'blackBright'} dimColor={!isActive}>
+            <Text color={isActive ? 'white' : 'blackBright'}>
               {(isActive ? '━' : '─').repeat(tab.label.length + 4)}
             </Text>
           </Box>

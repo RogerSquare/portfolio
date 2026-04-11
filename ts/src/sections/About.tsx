@@ -1,5 +1,4 @@
 // About section -- streaming bio with stats
-// Pattern from: terminal-ui-showcase/src/demos/streaming-text.tsx
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text } from 'ink';
@@ -29,18 +28,18 @@ export default function AboutSection() {
   return (
     <Box flexDirection="column">
       <Box width={52}>
-        <Text color="gray" wrap="wrap">
+        <Text color="white" wrap="wrap">
           {about.slice(0, charIdx)}
-          {!done && <Text color="cyan" dimColor>{cursorVisible ? '▌' : ' '}</Text>}
+          {!done && <Text color="cyanBright" dimColor>{cursorVisible ? '▌' : ' '}</Text>}
         </Text>
       </Box>
       {done && (
         <Box marginTop={1} gap={1}>
-          <Text color="white" dimColor>10 years</Text>
-          <Text color="blackBright">·</Text>
-          <Text color="white" dimColor>6+ projects</Text>
-          <Text color="blackBright">·</Text>
-          <Text color="white" dimColor>5+ languages</Text>
+          <Text color="white">10 years</Text>
+          <Text color="gray">·</Text>
+          <Text color="white">6+ projects</Text>
+          <Text color="gray">·</Text>
+          <Text color="white">5+ languages</Text>
         </Box>
       )}
     </Box>
