@@ -61,7 +61,7 @@ export async function streamResponse(
         model: 'qwen2.5:1.5b',
         messages: ollamaMessages,
         stream: true,
-        options: { temperature: 0.6 },
+        options: { temperature: 0.7, num_predict: 100, repeat_penalty: 1.5 },
       }),
     });
 
@@ -73,6 +73,7 @@ export async function streamResponse(
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let fullResponse = '';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -87,7 +88,19 @@ export async function streamResponse(
         try {
           const json = JSON.parse(line);
           if (json.message?.content) {
+            fullResponse += json.message.content;
             onToken(json.message.content);
+
+            // Stop if response is repeating itself
+            if (fullResponse.length > 80) {
+              const last40 = fullResponse.slice(-40);
+              const before = fullResponse.slice(0, -40);
+              if (before.includes(last40)) {
+                reader.cancel();
+                onDone();
+                return;
+              }
+            }
           }
           if (json.done) {
             onDone();
