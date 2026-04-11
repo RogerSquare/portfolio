@@ -132,11 +132,20 @@ export default function Portfolio() {
               <Text color="#444" wrap="wrap">{lastBotMsg.text}</Text>
             </Box>
           )}
-          {/* Robot */}
+          {/* Robot with cyan eyes/mouth */}
           <Box flexDirection="column">
-            {frame.map((line, i) => (
-              <Text key={`r-${i}`} color="#333">{line}</Text>
-            ))}
+            {frame.map((line, i) => {
+              // Only the face row (index 1) gets cyan coloring on non-box characters
+              if (i !== 1) return <Text key={`r-${i}`} color="#333">{line}</Text>;
+              return (
+                <Text key={`r-${i}`}>
+                  {line.split('').map((ch, j) => {
+                    const isBox = '┌┐└┘│─┬┴├┤ '.includes(ch);
+                    return <Text key={`c-${j}`} color={isBox ? '#333' : '#00bcd4'}>{ch}</Text>;
+                  })}
+                </Text>
+              );
+            })}
           </Box>
         </Box>
       </Box>
