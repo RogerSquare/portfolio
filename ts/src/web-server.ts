@@ -667,10 +667,19 @@ import { marked } from 'marked';
 marked.use({ renderer: { html: () => '', } });
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const POSTS_DIR = join(__dirname, '..', 'posts');
+const REPO_TS_DIR = join(__dirname, '..');
+const DATA_DIR = process.env.CAIRN_DATA_DIR || REPO_TS_DIR;
+const POSTS_DIR = join(DATA_DIR, 'posts');
+const POSTS_SEED_DIR = join(REPO_TS_DIR, 'posts.example');
 
-// Ensure posts directory exists
+// Ensure posts directory exists; seed from posts.example/ if empty and seed exists.
 if (!existsSync(POSTS_DIR)) mkdirSync(POSTS_DIR, { recursive: true });
+if (existsSync(POSTS_SEED_DIR) && readdirSync(POSTS_DIR).filter(f => f.endsWith('.md')).length === 0) {
+  for (const f of readdirSync(POSTS_SEED_DIR).filter(f => f.endsWith('.md'))) {
+    writeFileSync(join(POSTS_DIR, f), readFileSync(join(POSTS_SEED_DIR, f), 'utf8'), 'utf8');
+  }
+  console.log(`[blog] Seeded ${POSTS_DIR} from ${POSTS_SEED_DIR}`);
+}
 
 interface Post {
   slug: string;

@@ -1,12 +1,27 @@
-// Portfolio data -- loaded from data.json at runtime
-// Edit data.json directly or use the admin panel at /admin
+// Portfolio data -- loaded from data.json at runtime.
+// In production, set CAIRN_DATA_DIR to a path outside the repo
+// (e.g. /var/lib/cairn) so admin edits survive git pulls.
 
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_PATH = join(__dirname, '..', 'data.json');
+const REPO_TS_DIR = join(__dirname, '..');
+const DATA_DIR = process.env.CAIRN_DATA_DIR || REPO_TS_DIR;
+const DATA_PATH = join(DATA_DIR, 'data.json');
+const SEED_PATH = join(REPO_TS_DIR, 'data.example.json');
+
+// First-boot seed: if data.json is missing, copy from the committed template.
+if (!existsSync(DATA_PATH)) {
+  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
+  if (existsSync(SEED_PATH)) {
+    copyFileSync(SEED_PATH, DATA_PATH);
+    console.log(`[data] Seeded ${DATA_PATH} from ${SEED_PATH}`);
+  } else {
+    throw new Error(`No data.json at ${DATA_PATH} and no seed at ${SEED_PATH}`);
+  }
+}
 
 interface Contact { name: string; title: string; email: string; github: string; website: string; location: string; }
 interface Skill { name: string; items: string[]; }

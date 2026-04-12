@@ -100,10 +100,13 @@ The live site at `r-that.com` runs the **TypeScript/Ink version** in the `ts/` d
 | Thing | Value |
 |---|---|
 | Repo path on VPS | `/opt/portfolio` (run from `/opt/portfolio/ts`) |
+| **Mutable data dir** | `/var/lib/cairn` (via `CAIRN_DATA_DIR` env var) |
 | SSH portfolio service | `portfolio.service` (port 22) |
 | Web server service | `portfolio-web.service` |
 | Admin SSH | `ssh -p 2200 <user>@r-that.com` |
 | DNS | Cloudflare A record -> VPS IP, proxy **disabled** |
+
+Runtime-mutable content (`data.json`, blog posts) lives **outside** the repo at `$CAIRN_DATA_DIR`. That way admin CMS edits survive `git pull`. The repo only contains seed templates (`ts/data.example.json`, `ts/posts.example/`) which are copied on first boot if the target is empty.
 
 ### Happy path deploy
 
@@ -119,9 +122,9 @@ Three commands, done.
 
 ### Common scenarios
 
-**Changed `ts/data.json` (content only):** just the 3 commands above. No install, no build — `data.json` is read at startup.
+**Content edits (bio, skills, projects, blog posts):** done through the admin UI at `https://r-that.com/admin`. Writes go to `$CAIRN_DATA_DIR`, not the repo — no deploy needed, changes are live immediately.
 
-**Added a blog post in `ts/posts/`:** same 3 commands. Posts are read from disk.
+**Seeding new content from the repo:** if you want to push a new blog post *through git* instead of the admin UI, add the file to `ts/posts.example/` and commit. It only gets copied to the live posts dir on **first boot into an empty directory** — it won't overwrite or merge with existing posts. For ongoing content, use the admin UI.
 
 **Changed `ts/src/*.ts` / `.tsx`:** same 3 commands. Both services run via `tsx` (no compile step).
 
@@ -159,6 +162,26 @@ sudo systemctl restart portfolio.service portfolio-web.service
 ```
 
 If `ssh r-that.com` itself is broken, you can still reach the box on the admin port (`ssh -p 2200`) — that's the whole point of splitting them.
+
+### One-time migration (already done on r-that.com)
+
+If you ever set up a fresh VPS, do this once to move mutable data out of the repo:
+
+```bash
+sudo mkdir -p /var/lib/cairn
+sudo mv /opt/portfolio/ts/data.json /var/lib/cairn/
+sudo mv /opt/portfolio/ts/posts /var/lib/cairn/
+sudo chown -R <service-user>:<service-user> /var/lib/cairn
+```
+
+Then add the env var to both systemd units (`systemctl edit portfolio.service` and `systemctl edit portfolio-web.service`):
+
+```ini
+[Service]
+Environment="CAIRN_DATA_DIR=/var/lib/cairn"
+```
+
+`systemctl daemon-reload && systemctl restart portfolio.service portfolio-web.service`.
 
 ## CI/CD
 

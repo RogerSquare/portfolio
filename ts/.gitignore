@@ -2,4 +2,9 @@ node_modules/
 dist/
 *.log
 host_key
-data.example.json
+
+# Runtime-mutable data (edited by admin CMS) lives outside the repo
+# in production via CAIRN_DATA_DIR. Local dev keeps them here but untracked.
+# Seed templates are data.example.json and posts.example/ (both tracked).
+data.json
+posts/
