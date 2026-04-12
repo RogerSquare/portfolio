@@ -91,6 +91,75 @@ Edit `data.json` in the project root to change the portfolio content:
 
 The file is embedded into the binary at compile time, so rebuild after making changes.
 
+## Deployment
+
+The live site at `r-that.com` runs the **TypeScript/Ink version** in the `ts/` directory on a Hostinger VPS — not the Go binary above. This section is specifically for pushing updates to that live deployment.
+
+### VPS layout
+
+| Thing | Value |
+|---|---|
+| Repo path on VPS | `/opt/portfolio` (run from `/opt/portfolio/ts`) |
+| SSH portfolio service | `portfolio.service` (port 22) |
+| Web server service | `portfolio-web.service` |
+| Admin SSH | `ssh -p 2200 <user>@r-that.com` |
+| DNS | Cloudflare A record -> VPS IP, proxy **disabled** |
+
+### Happy path deploy
+
+After committing and pushing locally:
+
+```bash
+ssh -p 2200 <user>@r-that.com
+cd /opt/portfolio && git pull
+sudo systemctl restart portfolio.service portfolio-web.service
+```
+
+Three commands, done.
+
+### Common scenarios
+
+**Changed `ts/data.json` (content only):** just the 3 commands above. No install, no build — `data.json` is read at startup.
+
+**Added a blog post in `ts/posts/`:** same 3 commands. Posts are read from disk.
+
+**Changed `ts/src/*.ts` / `.tsx`:** same 3 commands. Both services run via `tsx` (no compile step).
+
+**Changed `ts/package.json` (added a dependency):** extra step before restarting:
+
+```bash
+cd /opt/portfolio/ts && npm install
+sudo systemctl restart portfolio.service portfolio-web.service
+```
+
+### Debugging a deploy
+
+Tail live logs:
+
+```bash
+sudo journalctl -u portfolio.service -f
+sudo journalctl -u portfolio-web.service -f
+```
+
+Check service status:
+
+```bash
+systemctl status portfolio.service portfolio-web.service
+```
+
+### Rollback
+
+If a deploy breaks the live site:
+
+```bash
+cd /opt/portfolio
+git log --oneline -5                      # find the last good commit
+git reset --hard <good-commit-sha>
+sudo systemctl restart portfolio.service portfolio-web.service
+```
+
+If `ssh r-that.com` itself is broken, you can still reach the box on the admin port (`ssh -p 2200`) — that's the whole point of splitting them.
+
 ## CI/CD
 
 A GitHub Actions workflow (`.github/workflows/release.yml`) triggers on tag pushes. It cross-compiles the application for six targets:
