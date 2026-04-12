@@ -102,9 +102,10 @@ The live site at `r-that.com` runs the **TypeScript/Ink version** in the `ts/` d
 | Repo path on VPS | `/opt/portfolio` (run from `/opt/portfolio/ts`) |
 | **Mutable data dir** | `/var/lib/cairn` (via `CAIRN_DATA_DIR` env var) |
 | SSH portfolio service | `portfolio.service` (port 22) |
-| Web server service | `portfolio-web.service` |
+| Web server service | `portfolio-web.service` (listens on `:3000`, behind nginx) |
+| Reverse proxy | nginx — `r-that.com` -> `localhost:3000`, `wiki.r-that.com` -> `/var/www/wiki` |
 | Admin SSH | `ssh -p 2200 <user>@r-that.com` |
-| DNS | Cloudflare A record -> VPS IP, proxy **disabled** |
+| DNS | Cloudflare A records -> VPS IP, proxy enabled (TLS termination at Cloudflare) |
 
 Runtime-mutable content (`data.json`, blog posts) lives **outside** the repo at `$CAIRN_DATA_DIR`. That way admin CMS edits survive `git pull`. The repo only contains seed templates (`ts/data.example.json`, `ts/posts.example/`) which are copied on first boot if the target is empty.
 
