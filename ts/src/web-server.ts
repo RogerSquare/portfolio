@@ -255,9 +255,9 @@ function layout(title: string, nav: string, content: string, showHero = false, m
     html, body, main, nav, nav a, a, .name, .title, .location, h2, .about, .skill-list, .project-link, .project-desc, .project-tech, .exp-role, .exp-meta, .exp-desc li, .contact-item, .prose p, .prose li, .prose code, .prose pre, .prose blockquote, .post-title, .post-meta, .post-excerpt, footer {
       transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
     }
-    .theme-toggle { background: none; border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; opacity: 0.4; transition: opacity 0.2s, background 0.2s; color: var(--text); padding: 0; }
-    .theme-toggle:hover { opacity: 0.9; background: color-mix(in srgb, var(--text-muted) 10%, var(--bg)); }
-    .theme-toggle svg { width: 16px; height: 16px; }
+    .theme-toggle { background: none; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; opacity: 0.55; transition: opacity 0.2s, background 0.2s; color: var(--text-strong); padding: 0; }
+    .theme-toggle:hover { opacity: 1; background: color-mix(in srgb, var(--text-muted) 12%, var(--bg)); }
+    .theme-toggle svg { width: 18px; height: 18px; }
     html.light .theme-toggle .icon-moon { display: none; }
     html:not(.light) .theme-toggle .icon-sun { display: none; }
     html.light .lightbox { background: rgba(255,255,255,0.95); }
@@ -265,7 +265,6 @@ function layout(title: string, nav: string, content: string, showHero = false, m
     html.light .lightbox-nav:hover, html.light .lightbox-close:hover { color: rgba(0,0,0,0.8); }
     html.light .lightbox-counter { color: rgba(0,0,0,0.4); }
     html.light .to-top:hover { background: rgba(0,0,0,0.05); }
-    html.light .bg-canvas-wrap { opacity: 0.15; }
     @media (max-width: 640px) {
       main { padding: 0 20px; }
       .header-top { padding: 20px 0; }
@@ -305,9 +304,10 @@ function layout(title: string, nav: string, content: string, showHero = false, m
       const canvas = document.getElementById('bg-canvas');
       const ctx = canvas.getContext('2d');
       const { random, floor, PI } = Math;
-      const traceColor = '#88888818';
-      const padColor = '#88888812';
-      const viaColor = '#88888825';
+      var isLight = document.documentElement.classList.contains('light');
+      var traceColor = isLight ? '#00000018' : '#88888818';
+      var padColor = isLight ? '#00000012' : '#88888812';
+      var viaColor = isLight ? '#00000025' : '#88888825';
       const MIN_BRANCH = 45;
       const FPS = 20;
       const interval = 1000 / FPS;
@@ -447,6 +447,13 @@ function layout(title: string, nav: string, content: string, showHero = false, m
       }
 
       window.addEventListener('resize', start);
+      window._restartBg = function() {
+        isLight = document.documentElement.classList.contains('light');
+        traceColor = isLight ? '#00000018' : '#88888818';
+        padColor = isLight ? '#00000012' : '#88888812';
+        viaColor = isLight ? '#00000025' : '#88888825';
+        start();
+      };
       start();
     })();
   </script>
@@ -499,7 +506,7 @@ function navLinks(active: string): string {
   const left = textLinks.map(l => `<a href="${l.href}"${l.label.toLowerCase() === active ? ' class="active"' : ''}>${l.label}</a>`).join('');
   const right = iconLinks.map(l => `<a href="${l.href}" class="nav-icon" title="${l.label}">${l.icon}</a>`).join('');
 
-  const themeToggle = `<button class="theme-toggle" title="Toggle theme" onclick="(function(){var h=document.documentElement,l=h.classList.toggle('light');localStorage.setItem('theme',l?'light':'dark')})()"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>`;
+  const themeToggle = `<button class="theme-toggle" title="Toggle theme" onclick="(function(){var h=document.documentElement,l=h.classList.toggle('light');localStorage.setItem('theme',l?'light':'dark');if(window._restartBg)window._restartBg()})()"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75 9.75 9.75 0 0 1 8.25 6c0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25 9.75 9.75 0 0 0 12.75 21a9.753 9.753 0 0 0 8.002-5.998z"/></svg></button>`;
 
   return left + '<span class="nav-spacer"></span>' + right + themeToggle;
 }
