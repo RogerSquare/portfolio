@@ -1330,15 +1330,18 @@ app.get('/admin/projects/new', requireAdmin, (_req, res) => {
       <label>Name</label><input type="text" name="name" required>
       <label>Description</label><textarea name="desc" rows="3"></textarea>
       <label>Tech (comma separated)</label><input type="text" name="tech">
-      <label>Link</label><input type="url" name="link">
+      <label>Link</label><input type="text" name="link" placeholder="example.com/path (scheme optional)">
       <div class="form-actions"><button type="submit" class="btn btn-primary">Add</button></div>
     </form>
   `));
 });
 
+// Display code prepends `https://`, so store links without a scheme.
+const normalizeLink = (s: string) => s.replace(/^https?:\/\//i, '').trim();
+
 app.post('/admin/projects/new', requireAdmin, (req, res) => {
   const data = getData();
-  data.projects.push({ name: b(req,'name'), desc: b(req,'desc'), tech: b(req,'tech').split(',').map((s: string) => s.trim()).filter(Boolean), link: b(req,'link') });
+  data.projects.push({ name: b(req,'name'), desc: b(req,'desc'), tech: b(req,'tech').split(',').map((s: string) => s.trim()).filter(Boolean), link: normalizeLink(b(req,'link')) });
   saveData(data);
   res.redirect('/admin/projects?msg=created');
 });
@@ -1355,7 +1358,7 @@ app.get('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
       <label>Name</label><input type="text" name="name" value="${esc(p.name)}" required>
       <label>Description</label><textarea name="desc" rows="3">${esc(p.desc)}</textarea>
       <label>Tech (comma separated)</label><input type="text" name="tech" value="${esc(p.tech.join(', '))}">
-      <label>Link</label><input type="url" name="link" value="${esc(p.link)}">
+      <label>Link</label><input type="text" name="link" value="${esc(p.link)}" placeholder="example.com/path (scheme optional)">
       <div class="form-actions"><button type="submit" class="btn btn-primary">Save</button></div>
     </form>
   `));
@@ -1365,7 +1368,7 @@ app.post('/admin/projects/edit/:idx', requireAdmin, (req, res) => {
   const data = getData();
   const i = safeIdx(req.params, 'idx', data.projects);
   if (i < 0) { res.redirect('/admin/projects'); return; }
-  data.projects[i] = { name: b(req,'name'), desc: b(req,'desc'), tech: b(req,'tech').split(',').map((s: string) => s.trim()).filter(Boolean), link: b(req,'link') };
+  data.projects[i] = { name: b(req,'name'), desc: b(req,'desc'), tech: b(req,'tech').split(',').map((s: string) => s.trim()).filter(Boolean), link: normalizeLink(b(req,'link')) };
   saveData(data);
   res.redirect('/admin/projects?msg=saved');
 });
