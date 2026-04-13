@@ -1,5 +1,15 @@
 # Cairn
 
+> SSH-accessible terminal portfolio in Go — `ssh r-that.com` and you're in a TUI, no browser required.
+
+**Live demo:** `ssh r-that.com` (or clone and `go run .`)
+**Stack:** Go · Bubble Tea (TUI) · Lip Gloss (styling) · Wish (SSH server) · `go:embed`
+**Status:** Active
+
+## What's interesting technically
+
+The entire portfolio is one Go binary. Content lives in a single `data.json` that's embedded into the compiled executable at build time via Go's `embed` package — no filesystem access at runtime, no config deploys, no CDN. The SSH server (Wish) lets anyone view the portfolio without needing a browser or installing anything; they just `ssh` in and get an MVU-architected TUI. Deploy is a single binary push. Tradeoff: `data.json` updates require a rebuild, but that's the same lifecycle as any compiled application — and it means content integrity matches binary version exactly.
+
 *(formerly Terminal Portfolio)*
 
 An interactive, SSH-accessible terminal portfolio built with Go and the Charm Bracelet ecosystem. It renders a full TUI (terminal user interface) with multiple navigable views, styled layouts, and keyboard-driven navigation. Connect via SSH or run the binary directly to browse through About, Skills, Projects, Experience, Education, and Contact sections.
