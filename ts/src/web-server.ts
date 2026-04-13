@@ -156,6 +156,8 @@ function layout(title: string, nav: string, content: string, showHero = false, m
     nav a { font-size: 14px; color: var(--text); opacity: 0.5; border-bottom: none; transition: opacity 0.2s; }
     nav a:hover { opacity: 1; border-bottom: none; }
     nav a.active { opacity: 0.9; }
+    nav .nav-ext { font-size: 0.75em; margin-left: 1px; display: inline-block; transition: transform 0.2s; }
+    nav a:hover .nav-ext { transform: translate(1px, -1px); }
     nav .nav-spacer { flex: 1; }
     nav .nav-icon { display: inline-flex; align-items: center; justify-content: center; opacity: 0.4; transition: opacity 0.2s; }
     nav .nav-icon:hover { opacity: 1; }
@@ -491,10 +493,11 @@ function navLinks(active: string): string {
   const contact = getContact();
 
   // Text links (left side)
-  const textLinks = [
+  const textLinks: Array<{ href: string; label: string; external?: boolean }> = [
     { href: '/blog', label: 'Blog' },
     { href: '/projects', label: 'Projects' },
     { href: '/experience', label: 'Experience' },
+    { href: 'https://wiki.r-that.com', label: 'Wiki', external: true },
   ];
 
   // Icon-only links (right side) -- all outlined stroke-based for consistency
@@ -503,7 +506,12 @@ function navLinks(active: string): string {
     { href: `https://${contact.github}`, label: 'github', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>' },
   ];
 
-  const left = textLinks.map(l => `<a href="${l.href}"${l.label.toLowerCase() === active ? ' class="active"' : ''}>${l.label}</a>`).join('');
+  const left = textLinks.map(l => {
+    const activeCls = l.label.toLowerCase() === active ? ' class="active"' : '';
+    const extAttrs = l.external ? ' target="_blank" rel="noopener"' : '';
+    const extMark = l.external ? ' <span class="nav-ext" aria-hidden="true">↗</span>' : '';
+    return `<a href="${l.href}"${activeCls}${extAttrs}>${l.label}${extMark}</a>`;
+  }).join('');
   const right = iconLinks.map(l => `<a href="${l.href}" class="nav-icon" title="${l.label}">${l.icon}</a>`).join('');
 
   const themeToggle = `<button class="theme-toggle" title="Toggle theme" onclick="(function(){var h=document.documentElement,l=h.classList.toggle('light');localStorage.setItem('theme',l?'light':'dark');if(window._restartBg)window._restartBg()})()"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>`;
